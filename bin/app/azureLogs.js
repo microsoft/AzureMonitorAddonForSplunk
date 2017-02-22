@@ -37,6 +37,7 @@
     var Policy = require('amqp10').Policy;
     var Promise = require('bluebird');
     var adal = require('adal-node');
+    var path = require('path');
 
     var subs = require('./subs');
     var config = require('./config.json');
@@ -158,9 +159,7 @@
             Logger.error(name, 'got an event hubs error');
         };
 
-        var SPLUNK_DB = process.env.SPLUNK_DB;
-        var myDataInputName = 'azureLogs';
-        var checkpointFileLocation = SPLUNK_DB + '\\modinputs\\' + myDataInputName;
+        var checkpointFileLocation = path.join(process.env.SPLUNK_DB,'modinputs', 'azureLogs');
 
         exports.streamEventsFromEventHub(name, singleInput, messageHandler, errorHandler, checkpointFileLocation, function() {
             Logger.debug(name, 'Calling callback function from streamEvents.');

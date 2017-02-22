@@ -12,10 +12,30 @@ Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
 
 ## Installation
-Until the add-on is in Splunkbase, installation is manual.<br/><br/>
-To install, clone into $SPLUNK_HOME/etc/apps/azureLogs. Restart Splunk. In the Splunk UI, you should now see it on the Manage Apps page as "Splunk Add-on for Azure Monitor Logs". In Settings/Data Inputs, you should see it as "Azure Monitor Logs". Add an instance and supply the values denoted in the following Inputs section. 
+Until the add-on is in Splunkbase, installation is manual. In both Windows and Linux cases, it's easiest if you first clone the repo into your personal space.
 
-The add-on wants to checkpoint in `$SPLUNK_DB/modinputs/azureLogs`. On a Windows system, SYSTEM needs read/write/update permissions, and $SPLUNK_DB is `c:\program files\splunk\var\lib\splunk`. Add the directory and set permissions via Windows Explorer. 
+### Windows
+$SPLUNK_HOME defaults to `c:\program files\splunk`. <br/>
+$SPLUNK_DB defaults to `c:\program files\splunk\var\lib\splunk`.
+
+1. Copy the contents of the cloned repo into `$SPLUNK_HOME/etc/apps/azureLogs`.
+2. Create `$SPLUNK_DB\modinputs\azureLogs`. 
+3. Alter permissions on the folder such that SYSTEM has read/write/update.
+4. Restart Splunk
+
+### Linux
+$SPLUNK_HOME defaults to `/opt/splunk`. <br/>
+$SPLUNK_DB defaults to `/datadrive/splunk_db`.
+
+1. Copy the contents of the cloned repo into `$SPLUNK_HOME/etc/apps/azureLogs`. 
+2. Install node.js using the guidance on this page: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
+3. From `$SPLUNK_HOME/etc/apps/azureLogs/bin/app`, execute the following: `sudo npm install`
+4. From `$SPLUNK_HOME/etc/apps`, execute the following:
+`sudo chown -R splunk:splunk azureLogs`
+5. Restart Splunk
+
+### After restarting Splunk
+In the Apps manager screen of the Splunk Web UI you should now see "Splunk Add-on for Azure Monitor". In Settings / Data Inputs you should see in the Local Inputs list "Azure Monitor Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the resource group that I'm monitoring with it, but you may have other naming standards.
 
 ## Inputs: (all are required)
 
@@ -35,6 +55,8 @@ Click the "More Settings" box and provide the following: (required)
 * Set sourcetype = manual
 * Source Type = azureMonitorLogs
 * Index = main
+
+These are the values that I use on my test system and of course you may have other standards for index and sourcetype values. The add-on takes no dependency on the values you use.
 
 ## Resource tags: (required)
 

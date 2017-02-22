@@ -23,9 +23,14 @@
 //      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //      THE SOFTWARE.
 
+var splunkjs = require("splunk-sdk");
+var ModularInputs = splunkjs.ModularInputs;
+var Logger = ModularInputs.Logger;
+
 var Promise = require('bluebird');
 var rp = require('request-promise');
 var fs = require('fs');
+var path = require('path');
 var _ = require('underscore');
 var translator = require('amqp10').translator;
 
@@ -55,20 +60,23 @@ exports.getToken = function getToken(context, resource, clientId, clientSecret) 
 }
 
 exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileLocation, hub, idx, offset) {
-    var checkpointFileName = checkpointFileLocation + '\\checkpoints.json';
+    var checkpointFileName = path.join(checkpointFileLocation, 'checkpoints.json');
     return new Promise(function (resolve, reject) {
         var checkpointsData = "{}";
 
         try {
+            Logger.debug('azureLogs', 'Making checkpoint file directory: ' + checkpointFileLocation);
             fs.mkdirSync(checkpointFileLocation);
         } catch (err) {
-
+            Logger.debug('azureLogs', 'Caught error making the checkpoint file directory: ' + err);
         }
 
         var checkpointsData;
         try {
+            Logger.debug('azureLogs', 'Reading contents of checkpoint file.');
             checkpointsData = fs.readFileSync(checkpointFileName, 'utf8');
         } catch (err) {
+            Logger.debug('azureLogs', 'Caught error reading checkpoint file: ' + err);
             checkpointsData = "{}"
         }
         checkpoints = JSON.parse(checkpointsData);
@@ -83,7 +91,14 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
         }
 
         checkpoints[hub] = hubOffsets;
-        fs.writeFileSync(checkpointFileName, JSON.stringify(checkpoints));
+
+        try {
+            Logger.debug('azureLogs', 'Writing checkpoint file');
+            fs.writeFileSync(checkpointFileName, JSON.stringify(checkpoints));
+        } catch (err) {
+            Logger.debug('azureLogs', 'Caught error writing checkpoint file: ' + err);
+            return reject();
+        }
 
         return resolve();
     })
