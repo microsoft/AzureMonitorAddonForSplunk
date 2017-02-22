@@ -1,5 +1,5 @@
 [azureLogs://<value>]
-*Splunk Add-on for Azure Monitor
+*Splunk Add-on for Azure Monitor Logs
 
 subscriptionId = <value>
 resourceGroup = <value>

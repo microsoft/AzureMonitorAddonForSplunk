@@ -5,17 +5,19 @@ This add-on was built in accordance with the guidelines on this page:<br/>
 
 It consumes Diagnostic Logs according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for any Azure resource, and passes those selected by the user's configuration along to Splunk.
 
+I'll refer to Splunk Add-on for Azure Monitor Logs as 'the add-on' further down in this text.
+
 Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Monitor](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview)
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
 
 ## Installation
 Until the add-on is in Splunkbase, installation is manual.<br/><br/>
-To install, clone into $SPLUNK_HOME/etc/apps/azureLogs. Restart Splunk. In the Splunk UI, you should now see it on the Manage Apps page as "Splunk Add-on for Azure Monitor". In Settings/Data Inputs, you should see it as "Azure Monitor Logs". Add an instance and supply the values denoted in the following Inputs section. 
+To install, clone into $SPLUNK_HOME/etc/apps/azureLogs. Restart Splunk. In the Splunk UI, you should now see it on the Manage Apps page as "Splunk Add-on for Azure Monitor Logs". In Settings/Data Inputs, you should see it as "Azure Monitor Logs". Add an instance and supply the values denoted in the following Inputs section. 
 
 The add-on wants to checkpoint in `$SPLUNK_DB/modinputs/azureLogs`. On a Windows system, SYSTEM needs read/write/update permissions, and $SPLUNK_DB is `c:\program files\splunk\var\lib\splunk`. Add the directory and set permissions via Windows Explorer. 
 
-## Inputs are: (all are required)
+## Inputs: (all are required)
 
 | Input Name | Example | Notes |
 |------------|---------|-------|
@@ -36,15 +38,15 @@ Click the "More Settings" box and provide the following: (required)
 
 ## Resource tags: (required)
 
-All ARM resources can have an arbitrary collection of tags associated with them. Tell the add-on to send logs for a resource to Splunk by adding a tag to it named DiagnosticLogs and set its value to True. This can be done in various ways including the portal.<br/>
+All ARM resources can have an arbitrary collection of tags associated with them. Tell the add-on to send logs for a resource to Splunk by adding a tag to the resource named DiagnosticLogs and set its value to True. This can be done in various ways including the portal.<br/>
 *If you don't put in the tags, you won't get any logs.*<br/>
 To learn more: [Use tags to organize your Azure resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags)
 
 ## config.json
-config.json provides for each log category the name of the hub written to. Multiple log categories may be written by a single resource type. It also identifies the name of the resource ID property on a resourceType-by-resourceType basis.
+For each log category `config.json` provides the name of the hub written to. Multiple log categories may be written to by a single resource type. It also identifies the name of the resource ID property on a resourceType-by-resourceType basis. It's a static file that will be updated periodically as more Azure resources start to send telemetry through Azure Monitor.
 
-## How it works
-This modular input assumes that you have a set of Azure resources (such as VMs, networks, storage) in a resource group. You want to monitor those resources as a group.<br/>
+## How the add-on works
+The add-on assumes that you have a set of Azure resources (such as VMs, networks, storage) in a resource group and you want to monitor those resources as a group.<br/>
 
 ### Step-by-Step (The add-on is invoked once per minute by Splunk Enterprise)
 * Get an authentication token for ARM api's.
