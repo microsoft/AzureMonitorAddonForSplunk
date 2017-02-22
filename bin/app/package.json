@@ -1,0 +1,15 @@
+{
+  "name": "azureLogs",
+  "version": "0.0.1",
+  "description": "Splunk modular input for Azure Monitor Diagnostic Logs",
+  "main": "azureLogs.js",
+  "dependencies": {
+    "amqp10": ">=3.0.0",
+    "bluebird": ">=3.4.0",
+    "request": "^2.79.0",
+    "request-promise": "^4.1.1",
+    "splunk-sdk": ">=1.4.0",
+    "adal-node": ">=0.1.22"
+  },
+  "author": "golive"
+}

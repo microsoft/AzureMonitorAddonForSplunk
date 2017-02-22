@@ -1,0 +1,68 @@
+{
+    "Microsoft.Logic/workflows": [
+        "insights-logs-workflowruntime"
+    ],
+    "insights-logs-workflowruntime": "workflowId",
+    "Microsoft.Network/networkSecurityGroups": [
+        "insights-logs-networksecuritygrouprulecounter",
+        "insights-logs-networksecuritygroupevent"
+    ],
+    "insights-logs-networksecuritygrouprulecounter": "resourceId",
+    "insights-logs-networksecuritygroupevent": "resourceId",
+    "Microsoft.Network/applicationGateways": [
+        "insights-logs-applicationgatewayaccesslog",
+        "insights-logs-applicationgatewayperformancelog",
+        "insights-logs-applicationgatewayfirewalllog"
+    ],
+    "insights-logs-applicationgatewayaccesslog": "resourceId",
+    "insights-logs-applicationgatewayperformancelog": "resourceId",
+    "insights-logs-applicationgatewayfirewalllog": "resourceId",
+    "Microsoft.Network/loadBalancers": [
+        "insights-logs-loadbalanceralertevent",
+        "insights-logs-loadbalancerprobehealthstatus"
+    ],
+    "insights-logs-loadbalanceralertevent": "resourceId",
+    "insights-logs-loadbalancerprobehealthstatus": "resourceId",
+    "Microsoft.KeyVault/vaults": [
+        "insights-logs-auditevent"
+    ],
+    "insights-logs-auditevent": "resourceId",
+    "Microsoft.Batch/batchAccounts": [
+        "insights-logs-servicelog"
+    ],
+    "insights-logs-servicelog": "resourceId",
+    "Microsoft.Logic/integrationAccounts": [
+        "insights-logs-integrationaccounttrackingevents"
+    ],
+    "insights-logs-integrationaccounttrackingevents": "resourceId",
+    "Microsoft.Automation/automationAccounts": [
+        "insights-logs-joblogs",
+        "insights-logs-jobstreams"
+    ],
+    "insights-logs-joblogs": "resourceId",
+    "insights-logs-jobstreams": "resourceId",
+    "Microsoft.DataLakeAnalytics/accounts": [
+        "insights-logs-audit",
+        "insights-logs-requests"
+    ],
+    "insights-logs-audit": "resourceId",
+    "insights-logs-requests": "resourceId",
+    "Microsoft.DataLakeStore/accounts": [
+        "insights-logs-audit",
+        "insights-logs-requests"
+    ],
+    "Microsoft.ServerManagement/nodes": [
+        "insights-logs-requestlogs"
+    ],
+    "insights-logs-requestlogs": "resourceId",
+    "Microsoft.ServiceBus/namespaces": [
+        "insights-logs-operationallogs"
+    ],
+    "insights-logs-operationallogs": "resourceId",
+    "Microsoft.StreamAnalytics/streamingjobs": [
+        "insights-logs-execution",
+        "insights-logs-authoring"
+    ],
+    "insights-logs-execution": "resourceId",
+    "insights-logs-authoring": "resourceId"
+}
