@@ -48,7 +48,7 @@ For each log category `config.json` provides the name of the hub written to. Mul
 ## How the add-on works
 The add-on assumes that you have a set of Azure resources (such as VMs, networks, storage) in a resource group and you want to monitor those resources as a group.<br/>
 
-### Step-by-Step (The add-on is invoked once per minute by Splunk Enterprise)
+### How it works, step-by-step (The add-on is invoked once per minute by Splunk Enterprise)
 * Get an authentication token for ARM api's.
 * Get the list of hubs in the event hub namespace
 * Get the list of resources in the resource group
