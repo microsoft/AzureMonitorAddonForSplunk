@@ -65,18 +65,18 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
         var checkpointsData = "{}";
 
         try {
-            Logger.debug('azureLogs', 'Making checkpoint file directory: ' + checkpointFileLocation);
+            Logger.debug('azure_monitor_logs', 'Making checkpoint file directory: ' + checkpointFileLocation);
             fs.mkdirSync(checkpointFileLocation);
         } catch (err) {
-            Logger.debug('azureLogs', 'Caught error making the checkpoint file directory: ' + err);
+            Logger.debug('azure_monitor_logs', 'Caught error making the checkpoint file directory: ' + err);
         }
 
         var checkpointsData;
         try {
-            Logger.debug('azureLogs', 'Reading contents of checkpoint file.');
+            Logger.debug('azure_monitor_logs', 'Reading contents of checkpoint file.');
             checkpointsData = fs.readFileSync(checkpointFileName, 'utf8');
         } catch (err) {
-            Logger.debug('azureLogs', 'Caught error reading checkpoint file: ' + err);
+            Logger.debug('azure_monitor_logs', 'Caught error reading checkpoint file: ' + err);
             checkpointsData = "{}"
         }
         checkpoints = JSON.parse(checkpointsData);
@@ -93,10 +93,10 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
         checkpoints[hub] = hubOffsets;
 
         try {
-            Logger.debug('azureLogs', 'Writing checkpoint file');
+            Logger.debug('azure_monitor_logs', 'Writing checkpoint file');
             fs.writeFileSync(checkpointFileName, JSON.stringify(checkpoints));
         } catch (err) {
-            Logger.debug('azureLogs', 'Caught error writing checkpoint file: ' + err);
+            Logger.debug('azure_monitor_logs', 'Caught error writing checkpoint file: ' + err);
             return reject();
         }
 

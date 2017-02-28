@@ -1,0 +1,1 @@
+@"%SPLUNK_HOME%"\bin\splunk cmd node "%~dp0\app\azure_monitor_logs.js" %*

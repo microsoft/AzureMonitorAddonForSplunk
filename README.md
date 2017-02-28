@@ -18,8 +18,8 @@ Until the add-on is in Splunkbase, installation is manual. In both Windows and L
 $SPLUNK_HOME defaults to `c:\program files\splunk`. <br/>
 $SPLUNK_DB defaults to `c:\program files\splunk\var\lib\splunk`.
 
-1. Copy the contents of the cloned repo into `$SPLUNK_HOME/etc/apps/azureLogs`.
-2. Create `$SPLUNK_DB\modinputs\azureLogs`. 
+1. Copy the contents of the cloned repo into `$SPLUNK_HOME/etc/apps/azure_monitor_logs`.
+2. Create `$SPLUNK_DB\modinputs\azure_monitor_logs`. 
 3. Alter permissions on the folder such that SYSTEM has read/write/update.
 4. Restart Splunk
 
@@ -27,11 +27,11 @@ $SPLUNK_DB defaults to `c:\program files\splunk\var\lib\splunk`.
 $SPLUNK_HOME defaults to `/opt/splunk`. <br/>
 $SPLUNK_DB defaults to `/datadrive/splunk_db`.
 
-1. Copy the contents of the cloned repo into `$SPLUNK_HOME/etc/apps/azureLogs`. 
+1. Copy the contents of the cloned repo into `$SPLUNK_HOME/etc/apps/azure_monitor_logs`. 
 2. Install node.js using the guidance on this page: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
-3. From `$SPLUNK_HOME/etc/apps/azureLogs/bin/app`, execute the following: `sudo npm install`
+3. From `$SPLUNK_HOME/etc/apps/azure_monitor_logs/bin/app`, execute the following: `sudo npm install`
 4. From `$SPLUNK_HOME/etc/apps`, execute the following:
-`sudo chown -R splunk:splunk azureLogs`
+`sudo chown -R splunk:splunk azure_monitor_logs`
 5. Restart Splunk
 
 ### After restarting Splunk

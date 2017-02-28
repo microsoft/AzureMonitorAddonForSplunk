@@ -1,4 +1,4 @@
-[azureLogs://<value>]
+[azure_monitor_logs://<value>]
 *Splunk Add-on for Azure Monitor Logs
 
 subscriptionId = <value>

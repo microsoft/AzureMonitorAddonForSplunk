@@ -159,7 +159,7 @@
             Logger.error(name, 'got an event hubs error');
         };
 
-        var checkpointFileLocation = path.join(process.env.SPLUNK_DB,'modinputs', 'azureLogs');
+        var checkpointFileLocation = path.join(process.env.SPLUNK_DB,'modinputs', 'azure_monitor_logs');
 
         exports.streamEventsFromEventHub(name, singleInput, messageHandler, errorHandler, checkpointFileLocation, function() {
             Logger.debug(name, 'Calling callback function from streamEvents.');
