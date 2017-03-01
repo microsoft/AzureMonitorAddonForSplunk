@@ -12,7 +12,15 @@ Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
 
 ## Installation
-Until the add-on is in Splunkbase, installation is manual. In both Windows and Linux cases, it's easiest if you first clone the repo into your personal space.
+In both Windows and Linux cases, it's easiest if you first clone the repo into your personal space.
+
+1. Go to Manage Apps in the Splunk Web interface.
+2. Click the button to "Install app from file"
+3. Select "TA-Azure_monitor_logs_1_0.spl" from the repo directory on your PC
+4. Restart Splunk <br/><br/>
+(Jump down to _After restarting Splunk_)
+
+## Manual installation for developers
 
 ### Windows
 $SPLUNK_HOME defaults to `c:\program files\splunk`. <br/>
@@ -36,7 +44,7 @@ $SPLUNK_DB defaults to `/datadrive/splunk_db`.
 6. Restart Splunk
 
 ### After restarting Splunk
-In the Apps manager screen of the Splunk Web UI you should now see "Splunk Add-on for Azure Monitor". In Settings / Data Inputs you should see in the Local Inputs list "Azure Monitor Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the resource group that I'm monitoring with it, but you may have other naming standards.
+In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor Logs". In Settings / Data Inputs you should see in the Local Inputs list "Azure Monitor Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the resource group that I'm monitoring with it, but you may have other naming standards.
 
 ## Inputs: (all are required)
 
