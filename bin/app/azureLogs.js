@@ -403,7 +403,7 @@
             })
 
             .catch(function (err) {
-                Logger.error(name, 'Caught an error setting up hub listeners.');
+                Logger.error(name, String.format('Caught an error setting up hub listeners: {0}', err));
                 callback(err, null);
             });
     };
