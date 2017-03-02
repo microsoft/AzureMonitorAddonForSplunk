@@ -16,7 +16,7 @@ In both Windows and Linux cases, it's easiest if you first clone the repo into y
 
 1. Go to Manage Apps in the Splunk Web interface.
 2. Click the button to "Install app from file"
-3. Select "TA-Azure_monitor_logs_1_0.spl" from the repo directory on your PC
+3. Select "TA-Azure_monitor_logs_1_0.spl" from deployment folder of the repo directory on your PC
 4. Restart Splunk <br/><br/>
 (Jump down to _After restarting Splunk_)
 

@@ -1,0 +1,60 @@
+{
+    "deploy": {
+        "packages": [
+            {
+                "name": "sourceModules",
+                "files": [
+                    "azureLogs.js", "subs.js", "config.json", "package.json"
+                ],
+                "deployOnSave": ["azureMonitorLogsBin"]
+            },
+            {
+                "name": "topLevelFiles",
+                "files": [
+                    "README.md"
+                ],
+                "deployOnSave": ["azureMonitorLogsTop"]
+            },
+            {
+                "name": "defaultFolderFiles",
+                "files": [
+                    "deployment/default/app.conf"
+                ],
+                "deployOnSave": ["azureMonitorLogsDefault"]
+            },
+            {
+                "name": "readmeFolderFiles",
+                "files": [
+                    "deployment/README/inputs.conf.spec"
+                ],
+                "deployOnSave": ["azureMonitorLogsREADME"]
+            }
+        ],
+        "targets": [
+            {
+                "type": "local",
+                "name": "azureMonitorLogsBin",
+                "description": "Splunk Enterprise for Azure Monitor Logs program files",
+                "dir": "/Applications/Splunk/etc/apps/TA-Azure_Monitor_Logs/bin/app"
+            },
+            {
+                "type": "local",
+                "name": "azureMonitorLogsTop",
+                "description": "Splunk Enterprise for Azure Monitor Logs top level files",
+                "dir": "/Applications/Splunk/etc/apps/TA-Azure_Monitor_Logs"
+            },
+            {
+                "type": "local",
+                "name": "azureMonitorLogsDefault",
+                "description": "Splunk Enterprise for Azure Monitor Logs default folder",
+                "dir": "/Applications/Splunk/etc/apps/TA-Azure_Monitor_Logs/default"
+            },
+            {
+                "type": "local",
+                "name": "azureMonitorLogsREADME",
+                "description": "Splunk Enterprise for Azure Monitor Logs README folder",
+                "dir": "/Applications/Splunk/etc/apps/TA-Azure_Monitor_Logs/README"
+            }
+        ]
+    }
+}
