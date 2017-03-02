@@ -4,7 +4,14 @@
             {
                 "name": "sourceModules",
                 "files": [
-                    "azureLogs.js", "subs.js", "config.json", "package.json"
+                    "bin/app/azureLogs.js", "bin/app/subs.js", "bin/app/config.json", "bin/app/package.json"
+                ],
+                "deployOnSave": ["azureMonitorLogsSource"]
+            },
+            {
+                "name": "binModules",
+                "files": [
+                    "bin/azure_monitor_logs.cmd", "bin/azure_monitor_logs.sh"
                 ],
                 "deployOnSave": ["azureMonitorLogsBin"]
             },
@@ -34,7 +41,13 @@
             {
                 "type": "local",
                 "name": "azureMonitorLogsBin",
-                "description": "Splunk Enterprise for Azure Monitor Logs program files",
+                "description": "Splunk Enterprise for Azure Monitor Logs bin files",
+                "dir": "/Applications/Splunk/etc/apps/TA-Azure_Monitor_Logs/bin"
+            },
+            {
+                "type": "local",
+                "name": "azureMonitorLogsSource",
+                "description": "Splunk Enterprise for Azure Monitor Logs source files",
                 "dir": "/Applications/Splunk/etc/apps/TA-Azure_Monitor_Logs/bin/app"
             },
             {
