@@ -6,6 +6,7 @@ resourceGroup = <value>
 tenantId = <value>
 clientId = <value>
 clientSecret = <value>
+eventHubResourceGroup = <value>
 eventHubNamespace = <value>
 sasKeyName = <value>
 sasKeyValue = <value>
