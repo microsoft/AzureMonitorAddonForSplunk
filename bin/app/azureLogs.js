@@ -311,6 +311,8 @@
                     hubsActuallyInNamespace.push(hub.name);
                 });
 
+                Logger.debug(name, String.format('hubsActuallyInNamespace: {0}', hubsActuallyInNamespace));
+
                 // set up and call to get the list of resources in the resource group
                 var options = {
                     uri: urlBaseResourceGroup + '/resources',
@@ -338,6 +340,10 @@
                     var neededHubs = [];
                     var resourceToBeLogged = '';
 
+                    Logger.debug(name, String.format('Looking at resource: {0}', resource.name));
+
+                    Logger.debug(name, String.format('Tags for this resource are: {0}', JSON.stringify(tags)));
+                    
                     if (_.isObject(tags)) {
 
                         var flag = tags.DiagnosticLogs;
@@ -356,6 +362,7 @@
                     }
 
                     if (resourceToBeLogged.length > 0) {
+                        Logger.debug(name, String.format('Adding resource to log list: {0}', resourceToBeLogged));
                         hubsPotentiallyQueried = _.union(hubsPotentiallyQueried, neededHubs);
                         arrayOfLoggedResources.push(resourceToBeLogged);
                     }
@@ -403,7 +410,7 @@
             })
 
             .catch(function (err) {
-                Logger.error(name, String.format('Caught an error setting up hub listeners: {0}', err));
+                Logger.error(name, String.format('Caught an error setting up: {0}', err));
                 callback(err, null);
             });
     };
