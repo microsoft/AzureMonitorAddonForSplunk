@@ -98,7 +98,7 @@
             new Argument({
                 name: "eventHubResourceGroup",
                 dataType: Argument.dataTypeString,
-                description: "Azure Event Hub namespace.",
+                description: "Resource group containing the event hub.",
                 requiredOnCreate: true,
                 requiredOnEdit: false
             }),
@@ -350,9 +350,7 @@
                     var neededHubs = [];
                     var resourceToBeLogged = '';
 
-                    Logger.debug(name, String.format('Looking at resource: {0}', resource.name));
-
-                    Logger.debug(name, String.format('Tags for this resource are: {0}', JSON.stringify(tags)));
+                    Logger.debug(name, String.format('Tags for resource {0} are: {1}', resource.name, JSON.stringify(tags)));
                     
                     if (_.isObject(tags)) {
 
@@ -382,7 +380,7 @@
                 // sort so lookups are faster
                 arrayOfLoggedResources.sort();
 
-                Logger.debug(name, 'Setting up listeners for hubs.');
+                Logger.debug(name, String.format('Setting up listeners for this list of hubs:', hubsToBeQueried));
 
                 // set up listeners on each hub
                 var serviceBusHost = eventHubNamespace + '.servicebus.windows.net';

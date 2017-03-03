@@ -18,30 +18,6 @@ In both Windows and Linux cases, it's easiest if you first clone the repo into y
 2. Click the button to "Install app from file"
 3. Select "TA-Azure_monitor_logs_1_0.spl" from deployment folder of the repo directory on your PC
 4. Restart Splunk <br/><br/>
-(Jump down to _After restarting Splunk_)
-
-## Manual installation for developers
-
-### Windows
-$SPLUNK_HOME defaults to `c:\program files\splunk`. <br/>
-$SPLUNK_DB defaults to `c:\program files\splunk\var\lib\splunk`.
-
-1. Copy the contents of the cloned repo into `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs`.
-2. Create `$SPLUNK_DB\modinputs\azure_monitor_logs`. 
-3. Alter permissions on the folder such that SYSTEM has read/write/update.
-4. Restart Splunk
-
-### Linux
-$SPLUNK_HOME defaults to `/opt/splunk`. <br/>
-$SPLUNK_DB defaults to `/datadrive/splunk_db`.
-
-1. Copy the contents of the cloned repo into `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs`. 
-2. Install node.js using the guidance on this page: [Installing Node.js via package manager](https://nodejs.org/en/download/package-manager/)
-3. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/bin/app`, execute the following: `sudo npm install`
-4. From `$SPLUNK_HOME/etc/apps`, execute the following:
-`sudo chown -R splunk:splunk TA-Azure_Monitor_Logs`
-5. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/bin/app`, execute the following: `sudo chmod +x azure_monitor_logs.sh`
-6. Restart Splunk
 
 ### After restarting Splunk
 In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor Logs". In Settings / Data Inputs you should see in the Local Inputs list "Azure Monitor Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the resource group that I'm monitoring with it, but you may have other naming standards.
@@ -55,6 +31,7 @@ In the Apps manager screen of the Splunk Web UI you should now see "Azure Monito
 | tenantId | `XXXX88bf-XXXX-41af-XXXX-XXXXd011XXXX` | your Azure AD tenant id |
 | clientId | `0edc5126-XXXX-4f47-bd78-XXXXXXXXXXXX` | your Service Principal Application ID |
 | clientSecret | `7lqd4scZWpxjBe6dQyYBY2bFjk+8jio9iOvCv65gf9w=` | your Service Principal password |
+| eventHubResourceGroup | `myEventHubResourceGroup` | the resource group containing the event hub namespace |
 | eventHubNamespace | `myEventHubNamespace` | the namespace of the event hub receiving logs |
 | sasKeyName | `RootManageSharedAccessKey` | the SAS key associated with your event hub namespace |
 | sasKeyValue | `ZhLwp9lsVWQt5UFgnogJXFbMnD8RDuHWgY0J9RN1ctE=` | the SAS password associated with that SAS key |
@@ -68,7 +45,8 @@ Click the "More Settings" box and provide the following: (required)
 These are the values that I use on my test system and of course you may have other standards for index and sourcetype values. The add-on takes no dependency on the values you use.
 
 ### What's an Azure AD Service Principal and where can I get one?
-See here: [Use portal to create Active Directory application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)
+See here: [Use portal to create Active Directory application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)<br/>
+Your service principal should be given Read permissions on the event hub resource group and any resource groups you want to monitor.
 
 ## Resource tags: (required)
 
