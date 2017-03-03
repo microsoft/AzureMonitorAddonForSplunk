@@ -96,6 +96,13 @@
                 requiredOnEdit: false
             }),
             new Argument({
+                name: "eventHubResourceGroup",
+                dataType: Argument.dataTypeString,
+                description: "Azure Event Hub namespace.",
+                requiredOnCreate: true,
+                requiredOnEdit: false
+            }),
+            new Argument({
                 name: "eventHubNamespace",
                 dataType: Argument.dataTypeString,
                 description: "Azure Event Hub namespace.",
@@ -174,6 +181,7 @@
         var clientId = singleInput.clientId;
         var clientSecret = singleInput.clientSecret;
         var resourceGroup = singleInput.resourceGroup;
+        var eventHubResourceGroup = singleInput.eventHubResourceGroup;
         var eventHubNamespace = singleInput.eventHubNamespace;
         var sasKeyName = singleInput.sasKeyName;
         var sasKeyValue = singleInput.sasKeyValue;
@@ -287,8 +295,10 @@
                 Logger.debug(name, 'Got bearer token.');
                 bearerToken = tokenResponse.accessToken;
 
+                var ehUri = String.format(azureEnvironmentEndpoint + '/subscriptions/{0}/resourceGroups/{1}/providers/Microsoft.EventHub/namespaces/{2}/eventhubs', subscriptionId, eventHubResourceGroup, eventHubNamespace);
+
                 var options = {
-                    uri: urlBaseResourceGroup + '/providers/Microsoft.EventHub/namespaces/' + eventHubNamespace + '/eventhubs',
+                    uri: ehUri,
                     qs: {
                         'api-version': AZUREAPIVERSIONHUBS
                     },
