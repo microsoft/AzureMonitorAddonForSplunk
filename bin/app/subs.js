@@ -68,7 +68,10 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
             Logger.debug('azure_monitor_logs', 'Making checkpoint file directory: ' + checkpointFileLocation);
             fs.mkdirSync(checkpointFileLocation);
         } catch (err) {
-            Logger.debug('azure_monitor_logs', 'Caught error making the checkpoint file directory: ' + err);
+            if (err.code === 'EEXIST') { }
+            else {
+                Logger.debug('azure_monitor_logs', 'Caught error making the checkpoint file directory: ' + err);
+            }
         }
 
         var checkpointsData;
@@ -76,8 +79,11 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
             Logger.debug('azure_monitor_logs', 'Reading contents of checkpoint file.');
             checkpointsData = fs.readFileSync(checkpointFileName, 'utf8');
         } catch (err) {
-            Logger.debug('azure_monitor_logs', 'Caught error reading checkpoint file: ' + err);
-            checkpointsData = "{}"
+            if (err.code === 'ENOENT') { }
+            else {
+                Logger.debug('azure_monitor_logs', 'Caught error reading checkpoint file: ' + err);
+                checkpointsData = "{}"
+            }
         }
         checkpoints = JSON.parse(checkpointsData);
 

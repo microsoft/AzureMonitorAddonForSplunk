@@ -1,0 +1,1 @@
+This is an add-on NOT powered by the Splunk Add-on Builder.
