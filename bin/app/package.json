@@ -1,6 +1,6 @@
 {
   "name": "azure_monitor_logs",
-  "version": "0.0.1",
+  "version": "0.9.1",
   "description": "Splunk modular input for Azure Monitor Diagnostic Logs",
   "main": "splunkAddonShell.js",
   "dependencies": {
