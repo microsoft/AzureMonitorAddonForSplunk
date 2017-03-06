@@ -32,7 +32,11 @@ var rp = require('request-promise');
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var adal = require('adal-node');
 var translator = require('amqp10').translator;
+var checkpoints;
+
+var AZUREAPIVERSIONKV = '2016-10-01';
 
 exports.stringFormat = function stringFormat() {
     if (!String.format) {
@@ -47,6 +51,45 @@ exports.stringFormat = function stringFormat() {
         };
     }
 }
+
+exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultName, secretName, secretVersion) {
+    var authorityUrl = 'https://login.windows.net/' + SPNTenantID;
+    var AuthenticationContext = adal.AuthenticationContext;
+    var context = new AuthenticationContext(authorityUrl);
+    var resource = 'https://vault.azure.net';
+
+    return new Promise(function (resolve, reject) {
+        exports.getToken(context, resource, SPNName, SPNPassword)
+            .then(function (tokenResponse) {
+
+                bearerToken = tokenResponse.accessToken;
+
+                var kvUri = String.format('https://{0}.vault.azure.net/secrets/{1}/{2}', vaultName, secretName, secretVersion);
+
+                var options = {
+                    uri: kvUri,
+                    qs: {
+                        'api-version': AZUREAPIVERSIONKV
+                    },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': "Bearer " + bearerToken
+                    },
+                    json: true
+                }
+                return rp(options);
+
+            })
+            .then(function (response) {
+                var creds = { sasKeyName: response.contentType, sasKeyValue: response.value };
+                return resolve(creds);
+            })
+            .catch(function (err) {
+                return reject(err);
+            });
+    })
+}
+
 
 exports.getToken = function getToken(context, resource, clientId, clientSecret) {
     return new Promise(function (resolve, reject) {
@@ -65,7 +108,7 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
         var checkpointsData = "{}";
 
         try {
-            Logger.debug('azure_monitor_logs', 'Making checkpoint file directory: ' + checkpointFileLocation);
+            //Logger.debug('azure_monitor_logs', 'Making checkpoint file directory: ' + checkpointFileLocation);
             fs.mkdirSync(checkpointFileLocation);
         } catch (err) {
             if (err.code === 'EEXIST') { }
@@ -76,7 +119,7 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
 
         var checkpointsData;
         try {
-            Logger.debug('azure_monitor_logs', 'Reading contents of checkpoint file.');
+            //Logger.debug('azure_monitor_logs', 'Reading contents of checkpoint file.');
             checkpointsData = fs.readFileSync(checkpointFileName, 'utf8');
         } catch (err) {
             if (err.code === 'ENOENT') { }
@@ -89,7 +132,7 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
 
         var hubOffsets = checkpoints[hub];
         if (_.isUndefined(hubOffsets)) {
-            hubOffsets = [0, 0, 0, 0];
+            hubOffsets = [-1, -1, -1, -1];
         }
 
         if (!_.isUndefined(idx) && !_.isUndefined(offset)) {
@@ -99,7 +142,7 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
         checkpoints[hub] = hubOffsets;
 
         try {
-            Logger.debug('azure_monitor_logs', 'Writing checkpoint file');
+            //Logger.debug('azure_monitor_logs', 'Writing checkpoint file');
             fs.writeFileSync(checkpointFileName, JSON.stringify(checkpoints));
         } catch (err) {
             Logger.debug('azure_monitor_logs', 'Caught error writing checkpoint file: ' + err);

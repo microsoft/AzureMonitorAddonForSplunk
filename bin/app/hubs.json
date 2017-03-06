@@ -1,0 +1,21 @@
+{
+    "insights-logs-workflowruntime": "workflowId",
+    "insights-logs-networksecuritygrouprulecounter": "resourceId",
+    "insights-logs-networksecuritygroupevent": "resourceId",
+    "insights-logs-applicationgatewayaccesslog": "resourceId",
+    "insights-logs-applicationgatewayperformancelog": "resourceId",
+    "insights-logs-applicationgatewayfirewalllog": "resourceId",
+    "insights-logs-loadbalanceralertevent": "resourceId",
+    "insights-logs-loadbalancerprobehealthstatus": "resourceId",
+    "insights-logs-auditevent": "resourceId",
+    "insights-logs-servicelog": "resourceId",
+    "insights-logs-integrationaccounttrackingevents": "resourceId",
+    "insights-logs-joblogs": "resourceId",
+    "insights-logs-jobstreams": "resourceId",
+    "insights-logs-audit": "resourceId",
+    "insights-logs-requests": "resourceId",
+    "insights-logs-requestlogs": "resourceId",
+    "insights-logs-operationallogs": "resourceId",
+    "insights-logs-execution": "resourceId",
+    "insights-logs-authoring": "resourceId"
+}
