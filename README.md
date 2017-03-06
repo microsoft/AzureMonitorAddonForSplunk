@@ -3,7 +3,7 @@
 This add-on was built in accordance with the guidelines on this page:<br/>
 [How to work with modular inputs in the Splunk SDK for JavaScript](http://dev.splunk.com/view/javascript-sdk/SP-CAAAEXM)
 
-It consumes Diagnostic Logs according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for any Azure resource, and passes those selected by the user's configuration along to Splunk.
+It consumes Diagnostic Logs according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for any Azure resource, and passes those selected by the user's configuration along to Splunk. It uses a Key Vault to store Event Hub credentials. Those credentials are retrieved by a Service Principal in the Reader role of the subscription. 
 
 I'll refer to Splunk Add-on for Azure Monitor Logs as 'the add-on' further down in this text.
 
@@ -16,25 +16,33 @@ In both Windows and Linux cases, it's easiest if you first clone the repo into y
 
 1. Go to Manage Apps in the Splunk Web interface.
 2. Click the button to "Install app from file"
-3. Select "TA-Azure_monitor_logs_1_0.spl" from deployment folder of the repo directory on your PC
-4. Restart Splunk <br/><br/>
+3. Select "TA-Azure_monitor_logs_0_9_1.spl" from deployment folder of the repo directory on your PC
+4. Restart Splunk <br/>
 
 ### After restarting Splunk
-In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor Logs". In Settings / Data Inputs you should see in the Local Inputs list "Azure Monitor Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the resource group that I'm monitoring with it, but you may have other naming standards.
+In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor Logs". In Settings / Data Inputs you should see in the Local Inputs list "Azure Monitor Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the subscription that I'm monitoring with it, but you may have other naming standards.
+
+### What's an Azure AD Service Principal and where can I get one?
+See here: [Use portal to create Active Directory application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)<br/>
+
+### Azure Configuration Steps
+
+1. Assign your service principal the Reader role (at least) in the subscription containing your Key Vault. In the portal, this is done by displaying the Subscriptions blade, then the subscription blade of the one containing your Key Vault, then Access Control (IAM). 
+2. Create a secret in your Key Vault. The normally optional Content Type field must be filled in with the name of the Event Hub's SAS key policy and the value must be filled in with the SAS key value.
+3. In the Access Policies of the Key Vault, add the Service Principal and give it GET secrets permissions.
+4. For each resource that you want to monitor, find the Monitoring section of its management blade in the portal, click the Diagnostic Logs button and fill in the details. This can also be done with PowerShell, the Azure CLI, or a program using the REST api.
 
 ## Inputs: (all are required)
 
 | Input Name | Example | Notes |
 |------------|---------|-------|
-| subscriptionId | `7X3X6Xd6-8XX8-46XX-8XXd-eaXXXXXXX52d` | your azure subscription id |
-| resourceGroup | `myResourceGroup` | the resource group containing resources that you want logs from |
-| tenantId | `XXXX88bf-XXXX-41af-XXXX-XXXXd011XXXX` | your Azure AD tenant id |
-| clientId | `0edc5126-XXXX-4f47-bd78-XXXXXXXXXXXX` | your Service Principal Application ID |
-| clientSecret | `7lqd4scZWpxjBe6dQyYBY2bFjk+8jio9iOvCv65gf9w=` | your Service Principal password |
-| eventHubResourceGroup | `myEventHubResourceGroup` | the resource group containing the event hub namespace |
+| SPNTenantID | `XXXX88bf-XXXX-41af-XXXX-XXXXd011XXXX` | your Azure AD tenant id |
+| SPNName | `0edc5126-XXXX-4f47-bd78-XXXXXXXXXXXX` | your Service Principal Application ID |
+| SPNPassword | `7lqd4scZWpxjBe6dQyYBY2bFjk+8jio9iOvCv65gf9w=` | your Service Principal password |
 | eventHubNamespace | `myEventHubNamespace` | the namespace of the event hub receiving logs |
-| sasKeyName | `RootManageSharedAccessKey` | the SAS key associated with your event hub namespace |
-| sasKeyValue | `ZhLwp9lsVWQt5UFgnogJXFbMnD8RDuHWgY0J9RN1ctE=` | the SAS password associated with that SAS key |
+| vaultName | `myKeyVault` | Name of the key vault containing your secrets |
+| secretName | `mySecret` | Name of the secret containing your event hub SAS credentials |
+| secretVersion | `secretVersion` | Version of the secret containing your event hub SAS credentials |
 
 Click the "More Settings" box and provide the following: (required)
 * Interval = 60
@@ -44,31 +52,16 @@ Click the "More Settings" box and provide the following: (required)
 
 These are the values that I use on my test system and of course you may have other standards for index and sourcetype values. The add-on takes no dependency on the values you use.
 
-### What's an Azure AD Service Principal and where can I get one?
-See here: [Use portal to create Active Directory application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)<br/>
-Your service principal should be given Read permissions on the event hub resource group and any resource groups you want to monitor.
-
-## Resource tags: (required)
-
-All ARM resources can have an arbitrary collection of tags associated with them. Tell the add-on to send logs for a resource to Splunk by adding a tag to the resource named DiagnosticLogs and set its value to True. This can be done in various ways including the portal.<br/>
-*If you don't put in the tags, you won't get any logs.*<br/>
-To learn more: [Use tags to organize your Azure resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags)
-
-## config.json
-For each log category `config.json` provides the name of the hub written to. Multiple log categories may be written to by a single resource type. It also identifies the name of the resource ID property on a resourceType-by-resourceType basis. It's a static file that will be updated periodically as more Azure resources start to send telemetry through Azure Monitor.
-
 ## How the add-on works
-The add-on assumes that you have a set of Azure resources (such as VMs, networks, storage) in a resource group and you want to monitor those resources as a group.<br/>
+The add-on assumes that you have resources in a subscription that you want to monitor. These resources must be configured to send Diagnostic Logs to an Event Hub.<br/>
 
 ### How it works, step-by-step (The add-on is invoked once per minute by Splunk Enterprise)
-* Get an authentication token for ARM api's.
-* Get the list of hubs in the event hub namespace
-* Get the list of resources in the resource group
-* For each resource in the list, see if the DiagnosticLogs tag is True.
-* From these data, determine which hubs to 'listen to'
-* For each of those hubs, create a listener
-* Wait for messages, passing along into Splunk as needed
-* If there's 1 second of silence across all hubs, terminate
+* Get an authentication token for Key Vault secrets.
+* Get the secret named in the Input Parameters.
+* Create connections to Azure Monitor hubs in the Event Hub Namespace.
+* Listen to the connections and pass any new messages along to Splunk.
+* If there's 5 seconds of silence across all hubs, terminate.
+* Splunk calls the add-on periodically, according to the Interval value above.
 
 ## Logging
 
