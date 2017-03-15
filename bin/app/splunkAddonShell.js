@@ -23,17 +23,19 @@
 //      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //      THE SOFTWARE.
 
-(function() {
-    var splunkjs        = require("splunk-sdk");
-    var ModularInputs   = splunkjs.ModularInputs;
-    var Logger          = ModularInputs.Logger;
-    var Event           = ModularInputs.Event;
-    var Scheme          = ModularInputs.Scheme;
-    var Argument        = ModularInputs.Argument;
+(function () {
+    var splunkjs = require("splunk-sdk");
+    var ModularInputs = splunkjs.ModularInputs;
+    var Logger = ModularInputs.Logger;
+    var Event = ModularInputs.Event;
+    var Scheme = ModularInputs.Scheme;
+    var Argument = ModularInputs.Argument;
+    var _ = require('underscore');
 
     // other global variables here
-    var logs = require('./azure_monitor_logs.js');
+    var logs = require('./azure_monitor_logs');
     var subs = require('./subs');
+    var categories = require('./logCategories.json');
     subs.stringFormat();
 
     exports.getScheme = function () {
@@ -104,18 +106,54 @@
     };
 
     // validateInput method validates the script's configuration (optional)
-    exports.validateInput = function(definition, done) {
+    exports.validateInput = function (definition, done) {
         done();
     };
 
     // streamEvents streams the events to Splunk Enterprise
-    exports.streamEvents = function(name, singleInput, eventWriter, done) {
-        
+    exports.streamEvents = function (name, singleInput, eventWriter, done) {
+
         var messageHandler = function (data) {
 
             Logger.debug(name, String.format('streamEvents.messageHandler got data'));
+
+            var resourceId = data.resourceId.toUpperCase() || '';
+            var category = data.category.toUpperCase() || '';
+            var subscriptionId = '';
+            var resourceName = '';
+            var resourceType = '';
+            if (resourceId.length > 0) { 
+                var match = resourceId.match('SUBSCRIPTIONS\/(.*?)\/'); 
+                if (!_.isNull(match)) {
+                    subscriptionId = match[1];
+                    data.amdl_subscriptionId = subscriptionId;
+                }
+                match = resourceId.match('PROVIDERS\/(.*?\/.*?)(?:\/)'); 
+                if (!_.isNull(match)) {
+                    resourceType = match[1];
+                    data.amdl_resourceType = resourceType;
+                }
+                match = resourceId.match('PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)'); 
+                if (!_.isNull(match)) { 
+                    resourceName = match[1];
+                    data.amdl_resourceName = resourceName;
+                }
+            }
+
+            var sourcetype = 'azureMonitorLogs';
+            if (resourceType != '') {
+                var testSourceType = categories[resourceType + '/' + category];
+                if (!_.isUndefined(testSourceType) && testSourceType.length > 0) {
+                    sourcetype = testSourceType;
+                }
+            }
+
+            Logger.debug(name, String.format('Subscription ID: {0}, resourceType: {1}, resourceName: {2}, sourcetype: {3}',
+                subscriptionId, resourceType, resourceName, sourcetype));
+
             var curEvent = new Event({
                 stanza: name,
+                sourcetype: sourcetype,
                 data: data
             });
 
@@ -134,10 +172,10 @@
 
         };
 
-        logs.streamEvents(name, singleInput, messageHandler, function() {
+        logs.streamEvents(name, singleInput, messageHandler, function () {
             done();
         });
-        
+
     };
 
     ModularInputs.execute(exports, module);
