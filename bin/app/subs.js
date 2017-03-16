@@ -153,7 +153,21 @@ exports.checkPointHubPartition = function checkPointHubPartition(checkpointFileL
     })
 }
 
-exports.getFilterOffsets = function getFilterOffsets(hubName) {
+exports.getFilterOffsets = function getFilterOffsets(checkpointFileLocation, hubName) {
+
+    var checkpointFileName = path.join(checkpointFileLocation, 'checkpoints.json');
+    var checkpointsData;
+    try {
+        //Logger.debug('azure_monitor_logs', 'Reading contents of checkpoint file.');
+        checkpointsData = fs.readFileSync(checkpointFileName, 'utf8');
+    } catch (err) {
+        if (err.code === 'ENOENT') { }
+        else {
+            Logger.debug('azure_monitor_logs', 'Caught error reading checkpoint file: ' + err);
+            checkpointsData = "{}"
+        }
+    }
+    checkpoints = JSON.parse(checkpointsData);
 
     var filterOffsets = checkpoints[hubName];
 

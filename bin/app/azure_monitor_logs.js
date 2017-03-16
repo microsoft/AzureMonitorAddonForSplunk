@@ -140,7 +140,7 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
             hubsToBeQueried.forEach(function (hub) {
                 subs.checkPointHubPartition(checkpointFileLocation, hub);
 
-                var filterOption = subs.getFilterOffsets(hub);
+                var filterOption = subs.getFilterOffsets(checkpointFileLocation, hub);
                 var recvAddr = hub + '/ConsumerGroups/$default/Partitions/';
 
                 amqpClients[hub] = {};

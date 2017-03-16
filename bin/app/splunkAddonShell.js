@@ -120,6 +120,7 @@
             var resourceId = data.resourceId.toUpperCase() || '';
             var category = data.category.toUpperCase() || '';
             var subscriptionId = '';
+            var resourceGroup = '';
             var resourceName = '';
             var resourceType = '';
             if (resourceId.length > 0) { 
@@ -127,6 +128,11 @@
                 if (!_.isNull(match)) {
                     subscriptionId = match[1];
                     data.amdl_subscriptionId = subscriptionId;
+                }
+                match = resourceId.match('SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
+                if (!_.isNull(match)) {
+                    resourceGroup = match[1];
+                    data.amdl_resourceGroup = resourceGroup;
                 }
                 match = resourceId.match('PROVIDERS\/(.*?\/.*?)(?:\/)'); 
                 if (!_.isNull(match)) {
