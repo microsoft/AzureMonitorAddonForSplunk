@@ -12,11 +12,10 @@ Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
 
 ## Installation
-In both Windows and Linux cases, it's easiest if you first clone the repo into your personal space.
 
 1. Go to Manage Apps in the Splunk Web interface.
-2. Click the button to "Install app from file"
-3. Select "TA-Azure_monitor_logs_0_9_3.spl" from deployment folder of the repo directory on your PC
+2. Click the green button to "Browse more apps"
+3. Select "Splunk Add-on for Microsoft Azure Monitor"
 4. Restart Splunk <br/>
 
 ### After restarting Splunk
