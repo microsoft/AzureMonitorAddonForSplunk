@@ -1,5 +1,7 @@
 # dev environment
 test/singleInput.json
+deployment
+modinputs
 
 # Logs
 logs

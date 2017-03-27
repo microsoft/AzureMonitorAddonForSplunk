@@ -30,7 +30,7 @@ var path = require('path');
 var Promise = require('bluebird');
 var fs = require('fs');
 
-var checkpointFileLocation = path.join(process.env.SPLUNK_DB, 'modinputs', 'azure_monitor_activity_logs');
+var checkpointFileLocation = path.join(process.env.SPLUNK_DB, 'modinputs', 'azure_monitor_logs');
 var checkpointFileName = path.join(checkpointFileLocation, 'checkpoints.json');
 
 exports.getCheckpoints = function (hub, idx, offset) {
