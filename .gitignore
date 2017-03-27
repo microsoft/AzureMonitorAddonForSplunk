@@ -1,3 +1,6 @@
+# dev environment
+test/singleInput.json
+
 # Logs
 logs
 *.log

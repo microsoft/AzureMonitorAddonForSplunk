@@ -4,25 +4,60 @@
         "showPopupOnSuccess":false,
         "packages": [
             {
-                "name": "sourceModules",                
-                "deployOnSave": true
+                "name": "root",
+                "deployOnSave": "saveAndPackage",
+                "files": [
+                    "README.md",
+                    "LICENSE"
+                ]
+            },
+            {
+                "name": "default",
+                "deployOnSave": "saveAndPackage",
+                "files": [
+                    "default/app.conf"
+                ]
+            },
+            {
+                "name": "README",
+                "deployOnSave": "amdl",
+                "files": [
+                    "README/inputs.conf.spec"
+                ]
+            },
+            {
+                "name": "bin",
+                "deployOnSave": "amdl",
+                "files": [
+                    "bin/app/azure_monitor_logs.js",
+                    "bin/app/splunkAddonShell.js",
+                    "bin/app/subs.js",
+                    "bin/app/strings.js",
+                    "bin/app/checkpoints.js",
+                    "bin/app/sourcetypes.json",
+                    "bin/app/package.json",
+                    "bin/app/logCategories.json",
+                    "bin/azure_monitor_logs.cmd",
+                    "bin/azure_monitor_logs.sh"
+                ]
             }            
         ],
         "targets": [
             {
                 "type": "local",
-                "name": "azureMonitorLogs",
-                "description": "Splunk Enterprise for Azure Monitor Logs default folder",
-                "dir": "/Applications/Splunk/etc/apps/TA-Azure_Monitor_Logs",
-                "mappings": [
-                    {
-                        "source": "deployment/default",
-                        "target": "default"
-                    },
-                    {
-                        "source": "deployment/README",
-                        "target": "README"
-                    }
+                "name": "amdl",
+                "dir": "deployment/TA-Azure_Monitor_Logs"
+            },
+            {
+                "type": "app",
+                "name": "package",
+                "app": "deployment/package.cmd"
+            },
+            {
+                "type": "batch",
+                "name": "saveAndPackage",
+                "targets":[
+                    "amdl", "package"
                 ]
             }
         ]
