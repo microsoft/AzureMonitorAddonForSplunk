@@ -73,7 +73,6 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
         }
     };
 
-    var quiescenceTimer;
     var ehMessageHandler = function (hub, myIdx, msg) {
 
         var annotations = msg.messageAnnotations;
@@ -85,10 +84,11 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
 
         Logger.debug(name, String.format('==> Message Received on hub: {0} and partition: {1}. newOffset = {2}', hub, myIdx, newOffset));
 
-        if (!_.isUndefined(quiescenceTimer)) {
-            Logger.debug(name, 'Resetting the timer.');
-            clearTimeout(quiescenceTimer);
-            quiescenceTimer = setTimeout(disconnectFunction, 5000);
+        if (!_.isUndefined(this._quiescenceTimer)) {
+            var d = new Date();
+            Logger.debug(name, String.format('Resetting the timer at: {0}', d.toISOString()));
+            clearTimeout(this._quiescenceTimer);
+            this._quiescenceTimer = setTimeout(disconnectFunction, 5000);
         }
 
         var records = msg.body.records;
@@ -160,13 +160,15 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
                             })
                         ]);
                     })
-                    .then(function () {
-                        quiescenceTimer = setTimeout(disconnectFunction, 5000);
-                    })
                     .catch(function (e) {
                         Logger.error(name, String.format('connection error: {0}', e));
                     });
             });
+        })
+        .then(function () {
+            var d = new Date();
+            Logger.debug(name, String.format('Time is now: {0}', d.toISOString()));
+            this._quiescenceTimer = setTimeout(disconnectFunction, 5000);
         })
         .catch(function (err) {
             Logger.error(name, String.format('Error getting event hub creds: {0}', err));
