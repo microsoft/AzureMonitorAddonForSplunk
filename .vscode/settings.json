@@ -37,6 +37,7 @@
                     "bin/app/sourcetypes.json",
                     "bin/app/package.json",
                     "bin/app/logCategories.json",
+                    "bin/app/hubs.json",
                     "bin/azure_monitor_logs.cmd",
                     "bin/azure_monitor_logs.sh"
                 ]
