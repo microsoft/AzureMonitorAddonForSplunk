@@ -1,11 +1,11 @@
-# Splunk Add-on For Azure Monitor Logs
+# Azure Monitor Add-on for Splunk
 
 This add-on was built in accordance with the guidelines on this page:<br/>
 [How to work with modular inputs in the Splunk SDK for JavaScript](http://dev.splunk.com/view/javascript-sdk/SP-CAAAEXM)
 
 It consumes Diagnostic Logs according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for any Azure resource, and passes those selected by the user's configuration along to Splunk. It uses a Key Vault to store Event Hub credentials. Those credentials are retrieved by a Service Principal in the Reader role of the subscription. 
 
-I'll refer to Splunk Add-on for Azure Monitor Logs as 'the add-on' further down in this text.
+I'll refer to Azure Monitor Add-on for Splunk as 'the add-on' further down in this text.
 
 Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Monitor](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview)
@@ -13,9 +13,9 @@ Here are a few resources if you want to learn more:<br/>
 
 ## Installation
 
-1. Go to Manage Apps in the Splunk Web interface.
-2. Click the green button to "Browse more apps"
-3. Select "Splunk Add-on for Microsoft Azure Monitor"
+1. Go to Splunkbase, find "Azure Monitor Add-on for Splunk".
+2. Download to your workstation.
+3. Go to App manager in Splunk Web, "Install app from File".
 4. Restart Splunk <br/>
 
 ### After restarting Splunk

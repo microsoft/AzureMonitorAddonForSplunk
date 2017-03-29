@@ -1,5 +1,5 @@
 [azure_monitor_logs://<value>]
-*Splunk Add-on for Azure Monitor Logs
+*Azure Monitor Add-on For Splunk
 
 SPNName = <value>
 SPNPassword = <value>

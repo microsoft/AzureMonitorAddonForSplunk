@@ -1,6 +1,6 @@
 {
   "name": "azure_monitor_logs",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Splunk modular input for Azure Monitor Diagnostic Logs",
   "main": "splunkAddonShell.js",
   "dependencies": {
@@ -12,5 +12,6 @@
     "underscore": ">=1.8.3",
     "adal-node": ">=0.1.22"
   },
+  "license": "see license in LICENSE",
   "author": "golive@microsoft.com"
 }
