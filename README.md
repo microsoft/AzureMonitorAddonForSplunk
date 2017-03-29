@@ -11,15 +11,29 @@ Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Monitor](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview)
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
 
-## Installation
+## Installation *nix
 
-1. Go to Splunkbase, find "Azure Monitor Add-on for Splunk".
-2. Download to your workstation.
-3. Go to App manager in Splunk Web, "Install app from File".
-4. Restart Splunk <br/>
+1. Clone this repo to the Splunk Enterprise node.
+2. `mkdir $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs`
+3. From cloned repo directory: 
+   `cp -R * $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/`
+4. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/bin/app`:
+   `npm install`
+5. `chmod +x $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/bin/azure_monitor_logs.sh`
+6. Restart Splunk <br/>
+
+## Installation Windows
+
+1. Clone this repo to the Splunk Enterprise node.
+2. `mkdir $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs`
+3. From cloned repo directory: 
+   `copy /S *.* $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/`
+4. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/bin/app`:
+   `npm install`
+5. Restart Splunk <br/>
 
 ### After restarting Splunk
-In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor Logs". In Settings / Data Inputs you should see in the Local Inputs list "Azure Monitor Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the subscription that I'm monitoring with it, but you may have other naming standards.
+In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor Logs". In Settings / Data Inputs you should see in the Local Inputs list "Azure Monitor Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the subscription that I'm monitoring, but you may have other naming standards.
 
 ### What's an Azure AD Service Principal and where can I get one?
 See here: [Use portal to create Active Directory application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)<br/>
