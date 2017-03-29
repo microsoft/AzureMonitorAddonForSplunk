@@ -13,9 +13,10 @@
             },
             {
                 "name": "default",
-                "deployOnSave": "saveAndPackage",
+                "deployOnSave": "amdl",
                 "files": [
-                    "default/app.conf"
+                    "default/app.conf",
+                    "default/inputs.conf"
                 ]
             },
             {
@@ -29,8 +30,8 @@
                 "name": "bin",
                 "deployOnSave": "amdl",
                 "files": [
-                    "bin/app/azure_monitor_logs.js",
-                    "bin/app/splunkAddonShell.js",
+                    "bin/app/amdl.js",
+                    "bin/app/azure_diagnostic_logs.js",
                     "bin/app/subs.js",
                     "bin/app/strings.js",
                     "bin/app/checkpoints.js",
@@ -38,8 +39,8 @@
                     "bin/app/package.json",
                     "bin/app/logCategories.json",
                     "bin/app/hubs.json",
-                    "bin/azure_monitor_logs.cmd",
-                    "bin/azure_monitor_logs.sh"
+                    "bin/azure_diagnostic_logs.cmd",
+                    "bin/azure_diagnostic_logs.sh"
                 ]
             }            
         ],
@@ -47,7 +48,7 @@
             {
                 "type": "local",
                 "name": "amdl",
-                "dir": "deployment/TA-Azure_Monitor_Logs"
+                "dir": "deployment/TA-Azure_Monitor"
             },
             {
                 "type": "app",

@@ -3,9 +3,9 @@
 This add-on was built in accordance with the guidelines on this page:<br/>
 [How to work with modular inputs in the Splunk SDK for JavaScript](http://dev.splunk.com/view/javascript-sdk/SP-CAAAEXM)
 
-It consumes Diagnostic Logs according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for any Azure resource, and passes those selected by the user's configuration along to Splunk. It uses a Key Vault to store Event Hub credentials. Those credentials are retrieved by a Service Principal in the Reader role of the subscription. 
-
 I'll refer to Azure Monitor Add-on for Splunk as 'the add-on' further down in this text.
+
+The add-on consumes Diagnostic Logs according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for any Azure resource, and passes those selected by the user's configuration along to Splunk. It uses a Key Vault to store Event Hub credentials. Those credentials are retrieved by a Service Principal in the Reader role of the subscription. 
 
 Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Monitor](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview)
@@ -14,26 +14,26 @@ Here are a few resources if you want to learn more:<br/>
 ## Installation *nix
 
 1. Clone this repo to the Splunk Enterprise node.
-2. `mkdir $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs`
+2. `mkdir $SPLUNK_HOME/etc/apps/TA-Azure_Monitor`
 3. From cloned repo directory: 
-   `cp -R * $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/`
-4. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/bin/app`:
+   `cp -R * $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/`
+4. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app`:
    `npm install`
-5. `chmod +x $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/bin/azure_monitor_logs.sh`
+5. `chmod +x $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/azure_diagnostic_logs.sh`
 6. Restart Splunk <br/>
 
 ## Installation Windows
 
 1. Clone this repo to the Splunk Enterprise node.
-2. `mkdir $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs`
+2. `mkdir $SPLUNK_HOME/etc/apps/TA-Azure_Monitor`
 3. From cloned repo directory: 
-   `copy /S *.* $SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/`
-4. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor_Logs/bin/app`:
+   `copy /S *.* $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/`
+4. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app`:
    `npm install`
 5. Restart Splunk <br/>
 
 ### After restarting Splunk
-In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor Logs". In Settings / Data Inputs you should see in the Local Inputs list "Azure Monitor Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the subscription that I'm monitoring, but you may have other naming standards.
+In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor". In Settings / Data Inputs you should see in the Local Inputs list "Azure Diagnostic Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the subscription that I'm monitoring, but you may have other naming standards.
 
 ### What's an Azure AD Service Principal and where can I get one?
 See here: [Use portal to create Active Directory application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)<br/>

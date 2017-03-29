@@ -7,8 +7,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launcher.js",
-            "program": "${workspaceRoot}/bin/app/launcher.js"
+            "name": "AMDL",
+            "program": "${workspaceRoot}/bin/app/launchamdl.js"
         },
         {
             "type": "node",

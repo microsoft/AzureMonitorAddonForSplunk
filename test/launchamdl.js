@@ -6,7 +6,7 @@ var ModularInputs = splunkjs.ModularInputs;
 var Logger = ModularInputs.Logger;
 
 var _ = require('underscore');
-var logs = require('./azure_monitor_logs.js');
+var logs = require('./amdl.js');
 var subs = require('./subs');
 var strings = require('./strings');
 strings.stringFormat();
@@ -28,7 +28,7 @@ var done = function () {
     process.exit();
 }
 
-var name = 'azure_monitor_logs';
+var name = 'azure_diagnostic_logs';
 logs.streamEvents(name, singleInput, messageHandler, function () {
     done();
 });

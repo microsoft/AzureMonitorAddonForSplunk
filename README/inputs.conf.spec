@@ -1,9 +1,9 @@
-[azure_monitor_logs://<value>]
+[azure_diagnostic_logs://<value>]
 *Azure Monitor Add-on For Splunk
 
+SPNTenantID = <value>
 SPNName = <value>
 SPNPassword = <value>
-SPNTenantID = <value>
 eventHubNamespace = <value>
 vaultName = <value>
 secretName = <value>
