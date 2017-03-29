@@ -34,26 +34,26 @@ var fs = require('fs');
 var checkpointFileLocation = path.join(process.env.SPLUNK_DB, 'modinputs', 'azure_monitor_logs');
 var checkpointFileName = path.join(checkpointFileLocation, 'checkpoints.json');
 
-exports.getCheckpoints = function (hub, idx, offset) {
+exports.getCheckpoints = function (name, hub, idx, offset) {
 
     try {
-        //Logger.debug('azure_monitor_activity_logs', 'Making checkpoint file directory: ' + checkpointFileLocation);
+        //Logger.debug('name', 'Making checkpoint file directory: ' + checkpointFileLocation);
         fs.mkdirSync(checkpointFileLocation);
     } catch (err) {
         if (err.code === 'EEXIST') { }
         else {
-            Logger.debug('azure_monitor_activity_logs', 'Caught error making the checkpoint file directory: ' + err);
+            Logger.debug('name', 'Caught error making the checkpoint file directory: ' + err);
         }
     }
 
     var checkpointsData = "{}";
     try {
-        //Logger.debug('azure_monitor_activity_logs', 'Reading contents of checkpoint file.');
+        //Logger.debug('name', 'Reading contents of checkpoint file.');
         checkpointsData = fs.readFileSync(checkpointFileName, 'utf8');
     } catch (err) {
         if (err.code === 'ENOENT') { }
         else {
-            Logger.debug('azure_monitor_activity_logs', 'Caught error reading checkpoint file: ' + err);
+            Logger.debug('name', 'Caught error reading checkpoint file: ' + err);
             checkpointsData = "{}"
         }
     }
@@ -62,13 +62,13 @@ exports.getCheckpoints = function (hub, idx, offset) {
     return checkpoints;
 }
 
-exports.putCheckpoints = function (err, checkpoints) {
+exports.putCheckpoints = function (err, name, checkpoints) {
 
     try {
-        //Logger.debug('azure_monitor_activity_logs', 'Writing checkpoint file');
+        //Logger.debug('name', 'Writing checkpoint file');
         fs.writeFileSync(checkpointFileName, JSON.stringify(checkpoints));
     } catch (err) {
-        Logger.debug('azure_monitor_activity_logs', 'Caught error writing checkpoint file: ' + err);
+        Logger.debug('name', 'Caught error writing checkpoint file: ' + err);
     }
 
 }

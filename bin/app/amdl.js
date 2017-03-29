@@ -80,7 +80,7 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
         var newOffset = Number(newOffsetData);
 
         var err;
-        subs.checkPointHubPartition(err, hub, myIdx, newOffset);
+        subs.checkPointHubPartition(err, name, hub, myIdx, newOffset);
 
         Logger.debug(name, String.format('==> Message Received on hub: {0} and partition: {1}. newOffset = {2}', hub, myIdx, newOffset));
 
@@ -144,9 +144,9 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
 
                 // make sure hub is initialized in checkpoints file
                 var err;
-                subs.checkPointHubPartition(err, hub);
+                subs.checkPointHubPartition(err, name, hub);
 
-                var filterOption = subs.getFilterOffsets(hub);
+                var filterOption = subs.getFilterOffsets(name, hub);
                 var recvAddr = hub + '/ConsumerGroups/$default/Partitions/';
 
                 amqpClients[hub] = {};

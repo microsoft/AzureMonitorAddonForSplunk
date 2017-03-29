@@ -91,9 +91,9 @@ exports.getToken = function (context, resource, clientId, clientSecret) {
     })
 }
 
-exports.checkPointHubPartition = function (err, hub, idx, offset) {
+exports.checkPointHubPartition = function (err, name, hub, idx, offset) {
 
-    checkpointsArray = checkpoints.getCheckpoints(hub, idx, offset);
+    checkpointsArray = checkpoints.getCheckpoints(name, hub, idx, offset);
 
     var hubOffsets = checkpointsArray[hub];
     if (_.isUndefined(hubOffsets)) {
@@ -107,13 +107,13 @@ exports.checkPointHubPartition = function (err, hub, idx, offset) {
     checkpointsArray[hub] = hubOffsets;
 
     var err;
-    checkpoints.putCheckpoints(err, checkpointsArray);
+    checkpoints.putCheckpoints(err, name, checkpointsArray);
     return;
 }
 
-exports.getFilterOffsets = function (hubName) {
+exports.getFilterOffsets = function (name, hubName) {
 
-    checkpointsArray = checkpoints.getCheckpoints(hubName)
+    checkpointsArray = checkpoints.getCheckpoints(name, hubName)
     var filterOffsets = checkpointsArray[hubName];
 
     var filterOption = [0, 0, 0, 0]; // todo:: need a x-opt-offset per partition.
