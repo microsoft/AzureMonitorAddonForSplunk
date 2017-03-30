@@ -1,7 +1,7 @@
 # Azure Monitor Add-on for Splunk
 
 This add-on was built in accordance with the guidelines on this page:<br/>
-[How to work with modular inputs in the Splunk SDK for JavaScript](http://dev.splunk.com/view/javascript-sdk/SP-CAAAEXM)
+[How to work with modular inputs in the Splunk SDK for JavaScript](http://dev.splunk.com/view/javascript-sdk/SP-CAAAEXM) It is built using cross-platform Node.js and has been tested on Ubuntu 14.04, Windows 10 and Mac OS X.
 
 I'll refer to Azure Monitor Add-on for Splunk as 'the add-on' further down in this text.
 
@@ -14,19 +14,19 @@ Here are a few resources if you want to learn more:<br/>
 
 ## Installation
 
-1. Download the package to your desktop.
+1. Download the package you want from the packages folder in this repo to your desktop.
 2. In Splunk Web go to 'Manage Apps'
 3. Click the button to 'Install app from file'
 4. Select the package file that you just downloaded and 'Upload'.
 5. There will be a warning message. This is because node.js app dependencies are not included in the package.
 6. If ```npm``` is not installed on the system, install it with:
    
-   *NIX:
-   ```apt-get update```
-   ```apt-get install npm```
+   *NIX:<br/>
+   ```apt-get update```<br/>
+   ```apt-get install npm```<br/>
 
-   WINDOWS:
-   Download from ```https://nodejs.org/en/download/``` and install.
+   WINDOWS:<br/>
+   Download from ```https://nodejs.org/en/download/``` and install.<br/>
 
 6. From ```$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app```:
    ```npm install```
