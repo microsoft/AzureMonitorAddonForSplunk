@@ -28,8 +28,8 @@ Here are a few resources if you want to learn more:<br/>
    WINDOWS:<br/>
    Download from ```https://nodejs.org/en/download/``` and install.<br/>
 
-6. From ```$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app```:
-   ```npm install```
+6. From ```$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app```:<br/>
+   ```npm install```<br/>
 7. Restart Splunk <br/>
 
 ### After restarting Splunk
