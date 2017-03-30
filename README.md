@@ -5,32 +5,32 @@ This add-on was built in accordance with the guidelines on this page:<br/>
 
 I'll refer to Azure Monitor Add-on for Splunk as 'the add-on' further down in this text.
 
-The add-on consumes Diagnostic Logs according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for any Azure resource, and passes those selected by the user's configuration along to Splunk. It uses a Key Vault to store Event Hub credentials. Those credentials are retrieved by a Service Principal in the Reader role of the subscription. 
+The add-on consumes Diagnostic Logs and the Activity Log according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for Azure resources, and passes those selected by the user's configuration along to Splunk. It uses a Key Vault to store Event Hub credentials. Those credentials are retrieved by a Service Principal in the Reader role of the subscription. 
 
 Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Monitor](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview)
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
+* [Overview of the Azure Activity Log](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-activity-logs)
 
-## Installation *nix
+## Installation
 
-1. Clone this repo to the Splunk Enterprise node.
-2. `mkdir $SPLUNK_HOME/etc/apps/TA-Azure_Monitor`
-3. From cloned repo directory: 
-   `cp -R * $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/`
-4. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app`:
+1. Download the package to your desktop.
+2. In Splunk Web go to 'Manage Apps'
+3. Click the button to 'Install app from file'
+4. Select the package file that you just downloaded and 'Upload'.
+5. There will be a warning message. This is because node.js app dependencies are not included in the package.
+6. If `npm` is not installed on the system, install it with:
+   
+   *NIX:
+   `apt-get update`
+   `apt-get install npm`
+
+   WINDOWS:
+   Download from `https://nodejs.org/en/download/` and install.
+
+6. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app`:
    `npm install`
-5. `chmod +x $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/azure_diagnostic_logs.sh`
-6. Restart Splunk <br/>
-
-## Installation Windows
-
-1. Clone this repo to the Splunk Enterprise node.
-2. `mkdir $SPLUNK_HOME/etc/apps/TA-Azure_Monitor`
-3. From cloned repo directory: 
-   `copy /S *.* $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/`
-4. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app`:
-   `npm install`
-5. Restart Splunk <br/>
+7. Restart Splunk <br/>
 
 ### After restarting Splunk
 In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor". In Settings / Data Inputs you should see in the Local Inputs list "Azure Diagnostic Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the subscription that I'm monitoring, but you may have other naming standards.
@@ -41,9 +41,9 @@ See here: [Use portal to create Active Directory application and service princip
 ### Azure Configuration Steps
 
 1. Assign your service principal the Reader role (at least) in the subscription containing your Key Vault. In the portal, this is done by displaying the Subscriptions blade, then the subscription blade of the one containing your Key Vault, then Access Control (IAM). 
-2. Create a secret in your Key Vault. The normally optional Content Type field must be filled in with the name of the Event Hub's SAS key policy and the value must be filled in with the SAS key value.
-3. In the Access Policies of the Key Vault, add the Service Principal and give it GET secrets permissions.
-4. For each resource that you want to monitor, find the Monitoring section of its management blade in the portal, click the Diagnostic Logs button and fill in the details. This can also be done with PowerShell, the Azure CLI, or a program using the REST api.
+2. Create a secret in your Key Vault for each event hub. The normally optional Content Type field must be filled in with the name of the Event Hub's SAS key policy and the value must be filled in with the SAS key value.
+3. In the Access Policies of the Key Vault, add the Service Principal and give it "GET secrets" permissions.
+4. For each resource that you want to monitor, find the Monitoring section of its management blade in the portal, click the Diagnostic Logs button and fill in the details for export to an event hub. This can also be done with PowerShell, the Azure CLI, or a program using the REST api.
 
 ## Inputs: (all are required)
 
@@ -60,7 +60,7 @@ See here: [Use portal to create Active Directory application and service princip
 Click the "More Settings" box and provide the following: (required)
 * Interval = 60
 * Set sourcetype = manual
-* Source Type = azureMonitorLogs
+* Source Type = amdl:diagnosticLogs or amal:activityLog
 * Index = main
 
 These are the values that I use on my test system and of course you may have other standards for index and sourcetype values. The add-on takes no dependency on the values you use.
