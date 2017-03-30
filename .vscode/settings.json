@@ -30,8 +30,9 @@
                 "name": "bin",
                 "deployOnSave": "amdl",
                 "files": [
-                    "bin/app/amdl.js",
+                    "bin/app/azure_monitor_logs.js",
                     "bin/app/azure_diagnostic_logs.js",
+                    "bin/app/azure_activity_log.js",
                     "bin/app/subs.js",
                     "bin/app/strings.js",
                     "bin/app/checkpoints.js",
@@ -40,7 +41,9 @@
                     "bin/app/logCategories.json",
                     "bin/app/hubs.json",
                     "bin/azure_diagnostic_logs.cmd",
-                    "bin/azure_diagnostic_logs.sh"
+                    "bin/azure_diagnostic_logs.sh",
+                    "bin/azure_activity_log.cmd",
+                    "bin/azure_activity_log.sh"
                 ]
             }            
         ],

@@ -4,9 +4,9 @@
 // Copyright (c) Microsoft Corporation
 //
 // All rights reserved. 
-//
-// MIT License
 // 
+// MIT License
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy 
 // of this software and associated documentation files (the ""Software""), to deal 
 // in the Software without restriction, including without limitation the rights 
@@ -41,10 +41,10 @@
     var categories = require('./logCategories.json');
 
     exports.getScheme = function () {
-        var scheme = new Scheme("Azure Monitor Diagnostic Logs");
+        var scheme = new Scheme("Azure Monitor Activity Log");
 
         // scheme properties
-        scheme.description = "Diagnostic Logs obtained from Azure Monitor.";
+        scheme.description = "Activity Log (aka Audit Log) obtained from Azure Monitor.";
         scheme.useExternalValidation = true;  // if true, must define validateInput method
         scheme.useSingleInstance = false;      // if true, all instances of mod input passed to
         //   a single script instance; if false, user 
@@ -126,8 +126,8 @@
             var resourceGroup = '';
             var resourceName = '';
             var resourceType = '';
-            if (resourceId.length > 0) { 
-                var match = resourceId.match('SUBSCRIPTIONS\/(.*?)\/'); 
+            if (resourceId.length > 0) {
+                var match = resourceId.match('SUBSCRIPTIONS\/(.*?)\/');
                 if (!_.isNull(match)) {
                     subscriptionId = match[1];
                     data.am_subscriptionId = subscriptionId;
@@ -137,13 +137,13 @@
                     resourceGroup = match[1];
                     data.am_resourceGroup = resourceGroup;
                 }
-                match = resourceId.match('PROVIDERS\/(.*?\/.*?)(?:\/)'); 
+                match = resourceId.match('PROVIDERS\/(.*?\/.*?)(?:\/)');
                 if (!_.isNull(match)) {
                     resourceType = match[1];
                     data.am_resourceType = resourceType;
                 }
-                match = resourceId.match('PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)'); 
-                if (!_.isNull(match)) { 
+                match = resourceId.match('PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
+                if (!_.isNull(match)) {
                     resourceName = match[1];
                     data.am_resourceName = resourceName;
                 }
