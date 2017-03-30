@@ -6,13 +6,14 @@ var ModularInputs = splunkjs.ModularInputs;
 var Logger = ModularInputs.Logger;
 
 var _ = require('underscore');
-var logs = require('./amdl.js');
+var logs = require('./amdl');
 var subs = require('./subs');
 var strings = require('./strings');
 strings.stringFormat();
 
 singleInput = require('./singleInput.json');
 
+var name = 'azure_diagnostic_logs://GOLIVE-Azure';
 
 var messageHandler = function (data) {
     var dataAsString = JSON.stringify(data);
@@ -28,7 +29,6 @@ var done = function () {
     process.exit();
 }
 
-var name = 'azure_diagnostic_logs';
 logs.streamEvents(name, singleInput, messageHandler, function () {
     done();
 });

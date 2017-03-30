@@ -31,44 +31,64 @@ var path = require('path');
 var Promise = require('bluebird');
 var fs = require('fs');
 
-var checkpointFileLocation = path.join(process.env.SPLUNK_DB, 'modinputs', 'azure_monitor_logs');
-var checkpointFileName = path.join(checkpointFileLocation, 'checkpoints.json');
-
 exports.getCheckpoints = function (name, hub, idx, offset) {
 
-    try {
-        //Logger.debug('name', 'Making checkpoint file directory: ' + checkpointFileLocation);
-        fs.mkdirSync(checkpointFileLocation);
-    } catch (err) {
-        if (err.code === 'EEXIST') { }
-        else {
-            Logger.debug('name', 'Caught error making the checkpoint file directory: ' + err);
-        }
-    }
+    var checkpointFileName = getCheckpointFileName(name);
 
     var checkpointsData = "{}";
     try {
-        //Logger.debug('name', 'Reading contents of checkpoint file.');
+        //Logger.debug(name, 'Reading contents of checkpoint file.');
         checkpointsData = fs.readFileSync(checkpointFileName, 'utf8');
     } catch (err) {
         if (err.code === 'ENOENT') { }
         else {
-            Logger.debug('name', 'Caught error reading checkpoint file: ' + err);
+            Logger.debug(name, 'Caught error reading checkpoint file: ' + err);
             checkpointsData = "{}"
         }
     }
-    checkpoints = JSON.parse(checkpointsData);
+    checkpointsObject = JSON.parse(checkpointsData);
 
-    return checkpoints;
+    return checkpointsObject;
 }
 
 exports.putCheckpoints = function (err, name, checkpoints) {
 
+    var checkpointFileName = getCheckpointFileName(name);
     try {
-        //Logger.debug('name', 'Writing checkpoint file');
+        //Logger.debug(name, 'Writing checkpoint file');
         fs.writeFileSync(checkpointFileName, JSON.stringify(checkpoints));
     } catch (err) {
-        Logger.debug('name', 'Caught error writing checkpoint file: ' + err);
+        Logger.debug(name, 'Caught error writing checkpoint file: ' + err);
     }
 
+}
+
+function makeDirectoryDeep(myDirectory) {
+
+    var myDirname = path.dirname(myDirectory);
+    var splitDirname = myDirname.split(path.sep);
+    var splitLength = splitDirname.length;
+
+    var subDir = splitDirname[0];
+    for (i=1; i<splitLength; i++) {
+        subDir = path.join(subDir, splitDirname[i]);
+        if (!fs.existsSync(subDir)) {
+            fs.mkdirSync(subDir);
+        }
+    }
+}
+
+function getCheckpointFileName(name) {
+
+    var directoryName = 'azure_diagnostic_logs';
+    if (~name.indexOf('azure_activity_log:')) {
+        directoryName = 'azure_activity_log';
+    }
+    var checkpointFileName = path.join(process.env.SPLUNK_DB, 'modinputs', directoryName, 'checkpoints.json');
+
+    if (!fs.existsSync(path.dirname(checkpointFileName))) {
+        makeDirectoryDeep(checkpointFileName);
+    }
+
+    return checkpointFileName;
 }

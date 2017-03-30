@@ -1,6 +1,6 @@
 //
 // SplunkAddOnForAzureMonitorLogs
-// 
+//
 // Copyright (c) Microsoft Corporation
 //
 // All rights reserved. 
@@ -56,10 +56,14 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
 
     // get the list of all of the possible hubs for Azure Monitor
     var hubsToBeQueried = [];
-    var hubNames = Object.keys(allHubs);
-    hubNames.forEach(function (hubName) {
-        hubsToBeQueried.push(hubName);
-    });
+    if (~name.indexOf('azure_activity_log:')) {
+        hubsToBeQueried.push('insights-operational-logs');
+    } else {
+        var hubNames = Object.keys(allHubs);
+        hubNames.forEach(function (hubName) {
+            hubsToBeQueried.push(hubName);
+        });
+    }
 
     // object to hold client objects
     var amqpClients = {};
@@ -174,5 +178,4 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
             Logger.error(name, String.format('Error getting event hub creds: {0}', err));
             return done();
         });
-
 }

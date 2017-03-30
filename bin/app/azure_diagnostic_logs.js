@@ -118,11 +118,10 @@
         var messageHandler = function (data) {
 
             var dataAsString = JSON.stringify(data);
-            Logger.debug(name, String.format('streamEvents.messageHandler got data'));
-            Logger.debug(name, String.format('{0}', dataAsString));
+            Logger.debug(name, String.format('streamEvents.messageHandler got data for data input named: {0}', name));
+            //Logger.debug(name, String.format('{0}', dataAsString));
 
             var resourceId = data.resourceId.toUpperCase() || '';
-            var category = data.category.toUpperCase() || '';
             var subscriptionId = '';
             var resourceGroup = '';
             var resourceName = '';
@@ -131,30 +130,36 @@
                 var match = resourceId.match('SUBSCRIPTIONS\/(.*?)\/'); 
                 if (!_.isNull(match)) {
                     subscriptionId = match[1];
-                    data.amdl_subscriptionId = subscriptionId;
+                    data.am_subscriptionId = subscriptionId;
                 }
                 match = resourceId.match('SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
                 if (!_.isNull(match)) {
                     resourceGroup = match[1];
-                    data.amdl_resourceGroup = resourceGroup;
+                    data.am_resourceGroup = resourceGroup;
                 }
                 match = resourceId.match('PROVIDERS\/(.*?\/.*?)(?:\/)'); 
                 if (!_.isNull(match)) {
                     resourceType = match[1];
-                    data.amdl_resourceType = resourceType;
+                    data.am_resourceType = resourceType;
                 }
                 match = resourceId.match('PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)'); 
                 if (!_.isNull(match)) { 
                     resourceName = match[1];
-                    data.amdl_resourceName = resourceName;
+                    data.am_resourceName = resourceName;
                 }
             }
 
-            var sourcetype = 'amdl:diagnosticLogs';
-            if (resourceType != '') {
-                var testSourceType = categories[resourceType + '/' + category];
-                if (!_.isUndefined(testSourceType) && testSourceType.length > 0) {
-                    sourcetype = testSourceType;
+            if (~name.indexOf('azure_activity_log:')) {
+                var sourcetype = 'amal:activityLog';
+            } else {
+                var sourcetype = 'amdl:diagnosticLogs';
+
+                var category = data.category.toUpperCase() || '';
+                if (resourceType != '') {
+                    var testSourceType = categories[resourceType + '/' + category];
+                    if (!_.isUndefined(testSourceType) && testSourceType.length > 0) {
+                        sourcetype = testSourceType;
+                    }
                 }
             }
 
