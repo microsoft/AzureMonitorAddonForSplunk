@@ -7,8 +7,6 @@ I'll refer to Azure Monitor Add-on for Splunk as 'the add-on' further down in th
 
 The add-on consumes Metrics, Diagnostic Logs and the Activity Log according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for Azure resources, and passes those selected by the user's configuration along to Splunk. It uses a Key Vault to store Event Hub credentials and ARM API credentials. Those credentials are retrieved by a Service Principal in the Reader role of the subscription. 
 
-NOTE: Metrics has just been merged with the project. This readme is out of date concerning installation and setup. It will be updated in the next few days.<br/>
-
 Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Monitor](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview)
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
