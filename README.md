@@ -16,23 +16,7 @@ Here are a few resources if you want to learn more:<br/>
 
 ## Installation
 
-1. Download the package you want from the packages folder in this repo to your desktop.
-2. In Splunk Web go to 'Manage Apps'
-3. Click the button to 'Install app from file'
-4. Select the package file that you just downloaded and 'Upload'.
-5. There will be a warning message. This is because node.js app dependencies are not included in the package.
-6. If `npm` is not installed on the system, install it with:
-   
-   *NIX:<br/>
-   `apt-get update`<br/>
-   `apt-get install npm`<br/>
-
-   WINDOWS:<br/>
-   Download from `https://nodejs.org/en/download/` and install.<br/>
-
-6. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app`:<br/>
-   `npm install`<br/>
-7. Restart Splunk <br/>
+See the Wiki for detailed installation instructions.
 
 ### After restarting Splunk
 In the Apps manager screen of the Splunk Web UI you should now see "Azure Monitor". In Settings / Data Inputs you should see in the Local Inputs list "Azure Diagnostic Logs". Create a new instance of the add-on and supply the needed inputs according to the Inputs section below. I name my instances according to the subscription that I'm monitoring, but you may have other naming standards.
