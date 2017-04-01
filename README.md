@@ -19,17 +19,17 @@ Here are a few resources if you want to learn more:<br/>
 3. Click the button to 'Install app from file'
 4. Select the package file that you just downloaded and 'Upload'.
 5. There will be a warning message. This is because node.js app dependencies are not included in the package.
-6. If ```npm``` is not installed on the system, install it with:
+6. If `npm` is not installed on the system, install it with:
    
    *NIX:<br/>
-   ```apt-get update```<br/>
-   ```apt-get install npm```<br/>
+   `apt-get update`<br/>
+   `apt-get install npm`<br/>
 
    WINDOWS:<br/>
-   Download from ```https://nodejs.org/en/download/``` and install.<br/>
+   Download from `https://nodejs.org/en/download/` and install.<br/>
 
-6. From ```$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app```:<br/>
-   ```npm install```<br/>
+6. From `$SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app`:<br/>
+   `npm install`<br/>
 7. Restart Splunk <br/>
 
 ### After restarting Splunk
@@ -49,13 +49,13 @@ See here: [Use portal to create Active Directory application and service princip
 
 | Input Name | Example | Notes |
 |------------|---------|-------|
-| SPNTenantID | ```XXXX88bf-XXXX-41af-XXXX-XXXXd011XXXX``` | your Azure AD tenant id |
-| SPNName | ```0edc5126-XXXX-4f47-bd78-XXXXXXXXXXXX``` | your Service Principal Application ID |
-| SPNPassword | ```7lqd4scZWpxjBe6dQyYBY2bFjk+8jio9iOvCv65gf9w=``` | your Service Principal password |
-| eventHubNamespace | ```myEventHubNamespace``` | the namespace of the event hub receiving logs |
-| vaultName | ```myKeyVault``` | Name of the key vault containing your secrets |
-| secretName | ```mySecret``` | Name of the secret containing your event hub SAS credentials |
-| secretVersion | ```secretVersion``` | Version of the secret containing your event hub SAS credentials |
+| SPNTenantID | `XXXX88bf-XXXX-41af-XXXX-XXXXd011XXXX` | your Azure AD tenant id |
+| SPNName | `0edc5126-XXXX-4f47-bd78-XXXXXXXXXXXX` | your Service Principal Application ID |
+| SPNPassword | `7lqd4scZWpxjBe6dQyYBY2bFjk+8jio9iOvCv65gf9w=` | your Service Principal password |
+| eventHubNamespace | `myEventHubNamespace` | the namespace of the event hub receiving logs |
+| vaultName | `myKeyVault` | Name of the key vault containing your secrets |
+| secretName | `mySecret` | Name of the secret containing your event hub SAS credentials |
+| secretVersion | `secretVersion` | Version of the secret containing your event hub SAS credentials |
 
 Click the "More Settings" box and provide the following: (required)
 * Interval = 60

@@ -43,7 +43,9 @@
                     "bin/azure_diagnostic_logs.cmd",
                     "bin/azure_diagnostic_logs.sh",
                     "bin/azure_activity_log.cmd",
-                    "bin/azure_activity_log.sh"
+                    "bin/azure_activity_log.sh",
+                    "bin/*.py",
+                    "bin/sourcetypes.json"
                 ]
             }            
         ],

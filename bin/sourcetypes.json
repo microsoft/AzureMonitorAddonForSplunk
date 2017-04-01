@@ -1,0 +1,5 @@
+{
+    "MICROSOFT.COMPUTE/VIRTUALMACHINES": "amm:compute:vm",
+    "MICROSOFT.WEB/SITES":"amm:web:sites",
+    "MICROSOFT.SQL/SERVERS/DATABASES": "amm:sqlserver:database"
+}

@@ -12,6 +12,26 @@
         },
         {
             "type": "node",
+            "request": "launch",
+            "name": "AMAL",
+            "program": "${workspaceRoot}/bin/app/launchamal.js"
+        },
+        {
+            "name": "metrics",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config.python.pythonPath}",
+            "program": "c:\\github\\SplunkAddonForAzureMonitorLogs\\test\\launcher.py",
+            "cwd": "c:\\github\\SplunkAddonForAzureMonitorLogs",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
+        {
+            "type": "node",
             "request": "attach",
             "name": "Attach to Process",
             "address": "localhost",
