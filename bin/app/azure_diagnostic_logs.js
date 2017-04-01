@@ -1,5 +1,5 @@
 //
-// SplunkAddOnForAzureMonitorLogs
+// AzureMonitorAddonForSplunk
 //
 // Copyright (c) Microsoft Corporation
 //
@@ -44,7 +44,7 @@
         var scheme = new Scheme("Azure Monitor Diagnostic Logs");
 
         // scheme properties
-        scheme.description = "Diagnostic Logs obtained from Azure Monitor.";
+        scheme.description = "Diagnostic Logs obtained via Azure Monitor.";
         scheme.useExternalValidation = true;  // if true, must define validateInput method
         scheme.useSingleInstance = false;      // if true, all instances of mod input passed to
         //   a single script instance; if false, user 

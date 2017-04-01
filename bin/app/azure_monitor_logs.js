@@ -1,5 +1,5 @@
 //
-// SplunkAddOnForAzureMonitorLogs
+// AzureMonitorAddonForSplunk
 //
 // Copyright (c) Microsoft Corporation
 //
