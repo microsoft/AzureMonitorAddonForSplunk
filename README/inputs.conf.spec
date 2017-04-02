@@ -21,7 +21,7 @@ secretName = <value>
 secretVersion = <value>
 
 [azure_monitor_metrics://<name>]
-*gets metrics from various azure resources
+*Azure Monitor Metrics Add-on For Splunk
 
 subscription_id = <value>
 tenant_id = <value>
