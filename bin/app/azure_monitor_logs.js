@@ -24,24 +24,168 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+/* jshint unused: true */
+
 var splunkjs = require("splunk-sdk");
 var ModularInputs = splunkjs.ModularInputs;
 var Logger = ModularInputs.Logger;
-var request = require('request');
-var rp = require('request-promise');
+var Scheme = ModularInputs.Scheme;
+var Event = ModularInputs.Event;
+var Argument = ModularInputs.Argument;
 
 var _ = require('underscore');
 var AMQPClient = require('amqp10').Client;
 var Policy = require('amqp10').Policy;
 var Promise = require('bluebird');
-var path = require('path');
 
 var subs = require('./subs');
 var strings = require('./strings');
 strings.stringFormat();
 var allHubs = require('./hubs.json');
+var categories = require('./logCategories.json');
 
-exports.streamEvents = function (name, singleInput, messageHandler, done) {
+var messageHandler = function (name, data, eventWriter) {
+
+    //var dataAsString = JSON.stringify(data);
+    Logger.debug(name, String.format('streamEvents.messageHandler got data for data input named: {0}', name));
+    //Logger.debug(name, String.format('{0}', dataAsString));
+
+    var resourceId = data.resourceId.toUpperCase() || '';
+    var subscriptionId = '';
+    var resourceGroup = '';
+    var resourceName = '';
+    var resourceType = '';
+    if (resourceId.length > 0) {
+        var match = resourceId.match('SUBSCRIPTIONS\/(.*?)\/');
+        if (!_.isNull(match)) {
+            subscriptionId = match[1];
+            data.am_subscriptionId = subscriptionId;
+        }
+        match = resourceId.match('SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
+        if (!_.isNull(match)) {
+            resourceGroup = match[1];
+            data.am_resourceGroup = resourceGroup;
+        }
+        match = resourceId.match('PROVIDERS\/(.*?\/.*?)(?:\/)');
+        if (!_.isNull(match)) {
+            resourceType = match[1];
+            data.am_resourceType = resourceType;
+        }
+        match = resourceId.match('PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
+        if (!_.isNull(match)) {
+            resourceName = match[1];
+            data.am_resourceName = resourceName;
+        }
+    }
+
+    var sourceType = '';
+    if (~name.indexOf('azure_activity_log:')) {
+        sourceType = 'amal:activityLog';
+    } else {
+        sourceType = 'amdl:diagnosticLogs';
+
+        var category = data.category.toUpperCase() || '';
+        if (resourceType !=='') {
+            var testSourceType = categories[resourceType + '/' + category];
+            if (!_.isUndefined(testSourceType) && testSourceType.length > 0) {
+                sourceType = testSourceType;
+            }
+        }
+    }
+
+    Logger.debug(name, String.format('Subscription ID: {0}, resourceType: {1}, resourceName: {2}, sourceType: {3}',
+        subscriptionId, resourceType, resourceName, sourceType));
+
+    var curEvent = new Event({
+        stanza: name,
+        sourcetype: sourceType,
+        data: data
+    });
+
+    try {
+        eventWriter.writeEvent(curEvent);
+        Logger.debug(name, String.format('streamEvents.messageHandler wrote an event'));
+    }
+    catch (e) {
+        errorFound = true; // Make sure we stop streaming if there's an error at any point
+        Logger.error(name, e.message);
+        done(e);
+
+        // we had an error; die
+        return;
+    }
+
+};
+
+exports.getScheme = function (schemeName, schemeDesc) {
+
+    var scheme = new Scheme(schemeName);
+
+    // scheme properties
+    scheme.description = schemeDesc;
+    scheme.useExternalValidation = true;  // if true, must define validateInput method
+    scheme.useSingleInstance = false;      // if true, all instances of mod input passed to
+    //   a single script instance; if false, user 
+    //   can set the interval parameter under "more settings"
+
+    // add arguments
+    scheme.args = [
+        new Argument({
+            name: "SPNTenantID",
+            dataType: Argument.dataTypeString,
+            description: "Azure AD tenant containing the service principal.",
+            requiredOnCreate: true,
+            requiredOnEdit: false
+        }),
+        new Argument({
+            name: "SPNApplicationId",
+            dataType: Argument.dataTypeString,
+            description: "Service principal application id (aka client id).",
+            requiredOnCreate: true,
+            requiredOnEdit: false
+        }),
+        new Argument({
+            name: "SPNApplicationKey",
+            dataType: Argument.dataTypeString,
+            description: "Service principal password (aka client secret).",
+            requiredOnCreate: true,
+            requiredOnEdit: false
+        }),
+        new Argument({
+            name: "eventHubNamespace",
+            dataType: Argument.dataTypeString,
+            description: "Azure Event Hub namespace.",
+            requiredOnCreate: true,
+            requiredOnEdit: false
+        }),
+        new Argument({
+            name: "vaultName",
+            dataType: Argument.dataTypeString,
+            description: "Key vault name.",
+            requiredOnCreate: true,
+            requiredOnEdit: false
+        }),
+        new Argument({
+            name: "secretName",
+            dataType: Argument.dataTypeString,
+            description: "Name of the secret containing SAS key & value.",
+            requiredOnCreate: true,
+            requiredOnEdit: false
+        }),
+        new Argument({
+            name: "secretVersion",
+            dataType: Argument.dataTypeString,
+            description: "Version of the secret containing SAS key & value.",
+            requiredOnCreate: true,
+            requiredOnEdit: false
+        })
+        // other arguments here
+    ];
+
+    return scheme;
+};
+
+exports.streamEvents = function (name, singleInput, eventWriter, done) {
 
     Logger.info(name, 'Streaming events from Azure Event Hubs until silence for 5 seconds.');
 
@@ -101,7 +245,7 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
             Logger.debug(name, String.format('message with {2} records received from hub {0} and partition {1}', hub, myIdx, records.length));
 
             records.forEach(function (record) {
-                messageHandler(record);
+                messageHandler(name, record, eventWriter);
             });
 
         } else {
@@ -134,9 +278,9 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
         hubs.forEach(function (hub) {
             amqpClients[hub].client.disconnect();
             delete amqpClients[hub];
-        })
+        });
         done();
-    }
+    };
 
     var serviceBusHost = eventHubNamespace + '.servicebus.windows.net';
     subs.getEventHubCreds(SPNName, SPNPassword, SPNTenantID, vaultName, secretName, secretVersion)
@@ -178,4 +322,4 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
             Logger.error(name, String.format('Error getting event hub creds: {0}', err));
             return done();
         });
-}
+};
