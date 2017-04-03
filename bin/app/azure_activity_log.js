@@ -53,23 +53,23 @@
         // add arguments
         scheme.args = [
             new Argument({
-                name: "SPNName",
+                name: "SPNTenantID",
+                dataType: Argument.dataTypeString,
+                description: "Azure AD tenant containing the service principal.",
+                requiredOnCreate: true,
+                requiredOnEdit: false
+            }),
+            new Argument({
+                name: "SPNApplicationId",
                 dataType: Argument.dataTypeString,
                 description: "Service principal application id (aka client id).",
                 requiredOnCreate: true,
                 requiredOnEdit: false
             }),
             new Argument({
-                name: "SPNPassword",
+                name: "SPNApplicationKey",
                 dataType: Argument.dataTypeString,
                 description: "Service principal password (aka client secret).",
-                requiredOnCreate: true,
-                requiredOnEdit: false
-            }),
-            new Argument({
-                name: "SPNTenantID",
-                dataType: Argument.dataTypeString,
-                description: "Azure AD tenant containing the service principal.",
                 requiredOnCreate: true,
                 requiredOnEdit: false
             }),

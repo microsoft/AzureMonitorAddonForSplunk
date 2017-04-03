@@ -11,6 +11,7 @@ Here are a few resources if you want to learn more:<br/>
 * [Overview of Azure Monitor](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview)
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
 * [Overview of the Azure Activity Log](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-activity-logs)
+* [Overview of Metrics in Microsoft Azure](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-metrics)  
 
 ## Installation
 
@@ -50,15 +51,7 @@ Click the "More Settings" box and provide the following: (required)
 These are the values that I use on my test system and of course you may have other standards for index and sourcetype values. The add-on takes no dependency on the values you use.
 
 ## How the add-on works
-The add-on assumes that you have resources in a subscription that you want to monitor. These resources must be configured to send Diagnostic Logs to an Event Hub.<br/>
-
-### How it works, step-by-step (The add-on is invoked once per minute by Splunk Enterprise)
-* Get an authentication token for Key Vault secrets.
-* Get the secret named in the Input Parameters.
-* Create connections to Azure Monitor hubs in the Event Hub Namespace.
-* Listen to the connections and pass any new messages along to Splunk.
-* If there's 5 seconds of silence across all hubs, terminate.
-* Splunk calls the add-on periodically, according to the Interval value above.
+A detailed Operational Overview is provided in the Wiki.  
 
 ## Logging
 

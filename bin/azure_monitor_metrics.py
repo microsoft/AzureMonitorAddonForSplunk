@@ -42,43 +42,43 @@ class AzureMonitorMetrics(Script):
         scheme.use_external_validation = True
         scheme.use_single_instance = False
 
-        arg1 = Argument("subscription_id")
-        arg1.data_type = Argument.data_type_string
-        arg1.required_on_create = True
-        arg1.required_on_edit = True
-        scheme.add_argument(arg1)
-
-        arg2 = Argument("tenant_id")
+        arg2 = Argument("SPNTenantID")
         arg2.data_type = Argument.data_type_string
         arg2.required_on_create = True
         arg2.required_on_edit = True
         scheme.add_argument(arg2)
 
-        arg3 = Argument("spn_client_id")
+        arg3 = Argument("SPNApplicationId")
         arg3.data_type = Argument.data_type_string
         arg3.required_on_create = True
         arg3.required_on_edit = True
         scheme.add_argument(arg3)
 
-        arg4 = Argument("spn_client_secret")
+        arg4 = Argument("SPNApplicationKey")
         arg4.data_type = Argument.data_type_string
         arg4.required_on_create = True
         arg4.required_on_edit = True
         scheme.add_argument(arg4)
 
-        arg5 = Argument("key_vault_name")
+        arg1 = Argument("SubscriptionId")
+        arg1.data_type = Argument.data_type_string
+        arg1.required_on_create = True
+        arg1.required_on_edit = True
+        scheme.add_argument(arg1)
+
+        arg5 = Argument("vaultName")
         arg5.data_type = Argument.data_type_string
         arg5.required_on_create = True
         arg5.required_on_edit = True
         scheme.add_argument(arg5)
 
-        arg6 = Argument("secret_name")
+        arg6 = Argument("secretName")
         arg6.data_type = Argument.data_type_string
         arg6.required_on_create = True
         arg6.required_on_edit = True
         scheme.add_argument(arg6)
 
-        arg7 = Argument("secret_version")
+        arg7 = Argument("secretVersion")
         arg7.data_type = Argument.data_type_string
         arg7.required_on_create = True
         arg7.required_on_edit = True
