@@ -47,8 +47,8 @@ exports.streamEvents = function (name, singleInput, messageHandler, done) {
 
     // setup
     var eventHubNamespace = singleInput.eventHubNamespace;
-    var SPNName = singleInput.SPNName;
-    var SPNPassword = singleInput.SPNPassword;
+    var SPNName = singleInput.SPNApplicationId;
+    var SPNPassword = singleInput.SPNApplicationKey;
     var SPNTenantID = singleInput.SPNTenantID;
     var vaultName = singleInput.vaultName;
     var secretName = singleInput.secretName;

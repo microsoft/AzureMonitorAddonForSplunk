@@ -74,13 +74,13 @@ def get_metrics_for_subscription(inputs, ew):
 
         for input_name, input_item in inputs.inputs.iteritems():
 
-            tenant_id = input_item["tenant_id"]
-            spn_client_id = input_item["spn_client_id"]
-            spn_client_secret = input_item["spn_client_secret"]
-            subscription_id = input_item["subscription_id"]
-            key_vault_name = input_item["key_vault_name"]
-            secret_name = input_item["secret_name"]
-            secret_version = input_item["secret_version"]
+            tenant_id = input_item["SPNTenantID"]
+            spn_client_id = input_item["SPNApplicationId"]
+            spn_client_secret = input_item["SPNApplicationKey"]
+            subscription_id = input_item["SubscriptionId"]
+            key_vault_name = input_item["vaultName"]
+            secret_name = input_item["secretName"]
+            secret_version = input_item["secretVersion"]
 
             locale = "get_access_token for key vault SPN"
             authentication_endpoint = "https://login.windows.net/"
