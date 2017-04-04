@@ -31,8 +31,6 @@
 
     var splunkjs = require("splunk-sdk");
     var ModularInputs = splunkjs.ModularInputs;
-
-    // // other global variables here
     var logs = require('./azure_monitor_logs');
 
     exports.getScheme = function () {
