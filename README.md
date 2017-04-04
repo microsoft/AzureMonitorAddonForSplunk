@@ -1,12 +1,10 @@
 # Azure Monitor Add-on for Splunk
 
-This add-on was built in accordance with the guidelines on this page:
-[How to work with modular inputs in the Splunk SDK for JavaScript](http://dev.splunk.com/view/javascript-sdk/SP-CAAAEXM)<br/>
-It is built using Node.js and Python 2.7 and has been tested on Ubuntu 14.04, Windows 10 and Mac OS X.
+This add-on is built using Node.js and Python 2.7 and has been tested on Ubuntu 14.04, Windows 10 and Mac OS X.
 
 It consumes Metrics, Diagnostic Logs and the Activity Log according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for Azure resources, and passes those selected by the user's configuration along to Splunk. 
 
-Here are a few resources if you want to learn more:<br/>
+Here are a few resources if you want to learn more about Azure Monitor:<br/>
 * [Overview of Azure Monitor](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview)
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
 * [Overview of the Azure Activity Log](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-activity-logs)
