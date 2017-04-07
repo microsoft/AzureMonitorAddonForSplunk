@@ -32,11 +32,14 @@
     var splunkjs = require("splunk-sdk");
     var ModularInputs = splunkjs.ModularInputs;
     var logs = require('./azure_monitor_logs');
+    var Logger = ModularInputs.Logger;
+    var strings = require('./strings');
+    strings.stringFormat();
 
     exports.getScheme = function () {
         var schemeName = 'Azure Monitor Activity Log';
         var schemeDesc = 'Activity Log (aka Audit Log) obtained via Azure Monitor.';
-        
+
         return logs.getScheme(schemeName, schemeDesc);
     };
 
@@ -47,11 +50,21 @@
 
     // streamEvents streams the events to Splunk Enterprise
     exports.streamEvents = function (name, singleInput, eventWriter, done) {
-        
-        logs.streamEvents(name, singleInput, eventWriter, function () {
-            done();
-        });
 
+        logs.getOrStoreSecrets(name, singleInput, function(err, results) {
+
+            mySingleInput = results;
+            
+            Logger.debug(name, String.format('single input = {0}', JSON.stringify(mySingleInput)));
+
+            if (err) {
+
+            } else {
+                logs.streamEvents(name, mySingleInput, eventWriter, function () {
+                    done();
+                });
+            }
+        });
     };
 
     ModularInputs.execute(exports, module);

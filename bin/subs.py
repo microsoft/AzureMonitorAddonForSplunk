@@ -231,28 +231,33 @@ def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq):
         ew.log('ERROR', e)
     #ew.log('DEBUG', 'SourceTypes list is: {0}'.format(sourcetypes))
 
-    set_of_available_metrics, metric_agg_type_lookup = get_set_of_available_metrics( \
-        ew, bearer_token, sub_url, resource_rq['resource_group_name'], resource_rq['resource'])
+    list_of_metrics = []
+    try:
+        set_of_available_metrics, metric_agg_type_lookup = get_set_of_available_metrics( \
+            ew, bearer_token, sub_url, resource_rq['resource_group_name'], resource_rq['resource'])
 
-    # in this case, the user tagged a resource that returns no metrics,
-    # or requested a metric by name that doesn't exist
-    if set_of_available_metrics == set():
-        return []
+        # in this case, the user tagged a resource that returns no metrics,
+        # or requested a metric by name that doesn't exist
+        if set_of_available_metrics == set():
+            return []
 
-    set_of_requested_metrics = resource_rq['metrics_rq']
+        set_of_requested_metrics = resource_rq['metrics_rq']
 
-    set_of_metrics_to_get = set()
-    # metrics to get = intersection of those available with those requested
-    if set_of_requested_metrics.issubset({ALL_AVAILABLE_METRICS}):
-        set_of_metrics_to_get = set_of_available_metrics.copy()
-    else:
-        set_of_metrics_to_get = set_of_available_metrics.intersection( \
-            set_of_requested_metrics)
+        set_of_metrics_to_get = set()
+        # metrics to get = intersection of those available with those requested
+        if set_of_requested_metrics.issubset({ALL_AVAILABLE_METRICS}):
+            set_of_metrics_to_get = set_of_available_metrics.copy()
+        else:
+            set_of_metrics_to_get = set_of_available_metrics.intersection( \
+                set_of_requested_metrics)
 
-    ew.log('DEBUG', 'getting list of metrics for: {0}'.format(resource_rq['resource']))
+        ew.log('DEBUG', 'getting list of metrics for: {0}'.format(resource_rq['resource']))
 
-    list_of_metrics = get_metrics_to_get(ew, bearer_token, sub_url, \
-        resource_rq['resource_group_name'], resource_rq['resource'], set_of_metrics_to_get, metric_agg_type_lookup)
+        list_of_metrics = get_metrics_to_get(ew, bearer_token, sub_url, \
+            resource_rq['resource_group_name'], resource_rq['resource'],\
+            set_of_metrics_to_get, metric_agg_type_lookup)
+    except Exception as e:
+        ew.log('ERROR', 'get_index_resource_metrics area 1: {0}'.format(e))
 
     for metric in list_of_metrics:
 
@@ -339,25 +344,29 @@ def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq):
             ew.log('DEBUG', 'Resource_type is None, resource_id: {0}'\
                 .format(resource_id))
 
-        # metric['data'] is an array of dict. pop it, then index using the dicts
-        # within the array, rather than one event with all of the dicts
-        datalist = metric.pop('data')
-        for dataitem in datalist:
+        try:
+            # metric['data'] is an array of dict. pop it, then index using the dicts
+            # within the array, rather than one event with all of the dicts
+            datalist = metric.pop('data')
+            for dataitem in datalist:
 
-            metric['data'] = dataitem
+                metric['data'] = dataitem
 
-            # convert it to something that Splunk likes
-            data_point_json = json.dumps(metric)
+                # convert it to something that Splunk likes
+                data_point_json = json.dumps(metric)
 
-            ew.log('DEBUG', 'Azure Monitor Metrics: Index data point: {0}, to sourcetype: {1}'\
-                .format(data_point_json, sourcetype))
+                ew.log('DEBUG', 'Azure Monitor Metrics: Index data point: {0}, to sourcetype: {1}'\
+                    .format(data_point_json, sourcetype))
 
-            # index the event
-            my_event = Event(sourcetype=sourcetype, data=data_point_json)
-            try:
-                ew.write_event(my_event)
-            except Exception as ex:
-                raise ex
+                # index the event
+                my_event = Event(sourcetype=sourcetype, data=data_point_json)
+                try:
+                    ew.write_event(my_event)
+                except Exception as ex:
+                    raise ex
+        except Exception as e:
+            ew.log('ERROR', 'Error caught indexing the data: {0}'\
+                .format(e))
 
 
 def get_metrics_for_resources(ew, bearer_token, sub_url, \
@@ -409,11 +418,13 @@ def get_set_of_available_metrics(ew, bearer_token, sub_url, \
     try:
         response = get_arm(ew, url_metrics_definitions, parameters, bearer_token)
     except Exception as e:
-        ew.log('ERROR', 'get_arm raised error getting metrics definitions: {0}, url: {1}'.format(e, url_metrics_definitions))
+        ew.log('ERROR', 'get_arm raised error getting metrics definitions: {0}, url: {1}'\
+            .format(e, url_metrics_definitions))
     else:
         metrics_definitions = response['value']
         for metric_definition in metrics_definitions:
-            metric_agg_type_lookup[metric_definition['name']['value']] = metric_definition['primaryAggregationType']
+            metric_agg_type_lookup[metric_definition['name']['value']]\
+                 = metric_definition['primaryAggregationType']
             set_of_available_metrics.add(metric_definition['name']['value'])
 
     return set_of_available_metrics, metric_agg_type_lookup
@@ -458,7 +469,8 @@ def get_metrics_to_get(ew, bearer_token, sub_url, \
     try:
         value = get_arm(ew, url_metrics, parameters, bearer_token)['value']
     except Exception as e:
-        value = e.message
+        ew.log('ERROR', 'get_metrics_to_get: Error returned from get_arm: {0}'.format(e))
+        value = []
 
     return value
 

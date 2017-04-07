@@ -27,8 +27,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 """
-import time
-from datetime import datetime, timedelta as td, tzinfo
+from datetime import datetime, timedelta as td
 import json
 
 def get_time_window(ew):
