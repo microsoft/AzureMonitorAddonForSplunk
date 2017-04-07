@@ -187,7 +187,7 @@ exports.getScheme = function (schemeName, schemeDesc) {
 
 exports.streamEvents = function (name, singleInput, eventWriter, done) {
 
-    Logger.info(name, 'Streaming events from Azure Event Hubs until silence for 5 seconds.');
+    Logger.debug(name, 'Streaming events from Azure Event Hubs until silence for 5 seconds.');
 
     // setup
     var eventHubNamespace = singleInput.eventHubNamespace;
@@ -273,7 +273,7 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
 
     var disconnectFunction = function () {
 
-        Logger.info(name, 'Five seconds of silence on all hubs, disconnecting.');
+        Logger.debug(name, 'Five seconds of silence on all hubs, disconnecting.');
         var hubs = Object.keys(amqpClients);
         hubs.forEach(function (hub) {
             amqpClients[hub].client.disconnect();

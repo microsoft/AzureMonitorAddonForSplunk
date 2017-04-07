@@ -91,7 +91,7 @@ class AzureMonitorMetrics(Script):
 
     def stream_events(self, inputs, ew):
 
-        ew.log('INFO', 'Azure Monitor Metrics stream_events starting.')
+        ew.log('DEBUG', 'Azure Monitor Metrics stream_events starting.')
 
         try:
             # put myself into the right directory for grabbing config file
@@ -105,7 +105,7 @@ class AzureMonitorMetrics(Script):
             ew.log('ERROR', 'Error caught in stream_events, type: {0}, value: {1}'\
                 .format(sys.exc_info()[0], sys.exc_info()[1]))
 
-        ew.log('INFO', 'Azure Monitor Metrics stream_events finishing.')
+        ew.log('DEBUG', 'Azure Monitor Metrics stream_events finishing.')
 
 if __name__ == "__main__":
     sys.exit(AzureMonitorMetrics().run(sys.argv))
