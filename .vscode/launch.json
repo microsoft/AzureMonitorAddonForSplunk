@@ -31,6 +31,20 @@
             ]
         },
         {
+            "name": "testTime",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config.python.pythonPath}",
+            "program": "c:\\github\\AzureMonitorAddonForSplunk\\test\\testTime.py",
+            "cwd": "c:\\github\\AzureMonitorAddonForSplunk",
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
+        },
+        {
             "type": "node",
             "request": "attach",
             "name": "Attach to Process",

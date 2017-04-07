@@ -28,6 +28,8 @@
 //
 """
 import time
+from datetime import datetime, timedelta as td, tzinfo
+import json
 
 def get_time_window(ew):
     '''
@@ -48,9 +50,14 @@ def put_time_window(ew):
         create and write new time window, where now is the ending time
         and then is the checkpoint (earlier) time
     '''
-    now = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(time.time()))
-    then = get_time_checkpoint(ew)
-    time_window = ' and startTime eq {0} and endTime eq {1}'.format(then, now)
+    end_time = datetime.utcnow()
+    start_time = get_time_checkpoint(ew)
+    if start_time + td(seconds=60) > end_time:
+        end_time = start_time + td(seconds=60)
+
+    time_window = ' and startTime eq {0} and endTime eq {1}'\
+        .format(start_time.strftime('%Y-%m-%dT%H:%M:%SZ'), \
+                end_time.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
     try:
         with open('timewindow.txt', 'w') as data_file:
@@ -61,25 +68,36 @@ def put_time_window(ew):
 
 def put_time_checkpoint(ew):
     '''
-        update the time checkpoint
+        update the time checkpoint. it is a serialized datetime.
     '''
-    now = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(time.time()))
+    now = datetime.utcnow()
+    serialized = {
+        'year': now.year,
+        'month': now.month,
+        'day': now.day,
+        'hour': now.hour,
+        'minute': now.minute,
+        'second': now.second,
+        'microsecond': now.microsecond
+    }
 
     try:
         with open('timecheckpoint.txt', 'w') as data_file:
-            data_file.write(now)
+            data_file.write(json.dumps(serialized))
     except Exception as err:
         ew.log('ERROR', 'Could not write time checkpoint, error: {0}'.format(err))
 
 
 def get_time_checkpoint(ew):
     '''
-        The time checkpoint is a formatted time string. Initialize it with now.
+        The time checkpoint is a serialized datetime. Initialize it with now.
     '''
     try:
         with open('timecheckpoint.txt') as data_file:
-            time_checkpoint = data_file.read()
+            d = json.loads(data_file.read())
+        time_checkpoint = datetime(d['year'], d['month'], d['day'], \
+            d['hour'], d['minute'], d['second'], d['microsecond'])
     except IOError:
-        time_checkpoint = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(time.time()))
+        time_checkpoint = datetime.utcnow()
 
     return time_checkpoint
