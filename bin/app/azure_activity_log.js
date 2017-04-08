@@ -23,7 +23,7 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
+// 
 
 /* jshint unused: true */
 
@@ -58,7 +58,7 @@
             Logger.debug(name, String.format('single input = {0}', JSON.stringify(mySingleInput)));
 
             if (err) {
-
+                Logger.error(name, String.format('Error getting secrets from storagePasswords: {0}', JSON.stringify(err)));
             } else {
                 logs.streamEvents(name, mySingleInput, eventWriter, function () {
                     done();

@@ -4,7 +4,7 @@
 // Copyright (c) Microsoft Corporation
 //
 // All rights reserved. 
-//
+// 
 // MIT License
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy 
@@ -57,7 +57,7 @@
             Logger.debug(name, String.format('single input = {0}', JSON.stringify(mySingleInput)));
 
             if (err) {
-
+                Logger.error(name, String.format('Error getting secrets from storagePasswords: {0}', JSON.stringify(err)));
             } else {
                 logs.streamEvents(name, mySingleInput, eventWriter, function () {
                     done();
