@@ -31,7 +31,7 @@ import sys
 import os
 from splunklib.modularinput import Script, Scheme, Argument
 from azure_monitor_metrics_main import get_metrics_for_subscription
-
+from azure_monitor_metrics_main import get_or_store_secrets
 class AzureMonitorMetrics(Script):
     '''
         entry point for add-on
@@ -98,8 +98,11 @@ class AzureMonitorMetrics(Script):
             dir_path = os.path.dirname(os.path.realpath(__file__))
             os.chdir(dir_path)
 
+            # go do the password dance
+            my_inputs = get_or_store_secrets(self, inputs, ew)
+
             # go do the work
-            get_metrics_for_subscription(inputs, ew)
+            get_metrics_for_subscription(my_inputs, ew)
 
         except:
             ew.log('ERROR', 'Error caught in stream_events, type: {0}, value: {1}'\

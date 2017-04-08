@@ -46,11 +46,14 @@ def get_time_window(ew):
 
 def put_time_window(ew):
     '''
-        create and write new time window, where now is the ending time
-        and then is the checkpoint (earlier) time
+        Azure writes metrics a bit time-lagged. If the time window is 60 
+        seconds ending now, chances are that the metric hasn't arrived.
+
+        Create and write new time window, where now - 60 is the ending time
+        and then is the checkpoint (earlier) time - 60
     '''
-    end_time = datetime.utcnow()
-    start_time = get_time_checkpoint(ew)
+    end_time = datetime.utcnow() - td(seconds=60)
+    start_time = get_time_checkpoint(ew) - td(seconds=60)
     if start_time + td(seconds=60) > end_time:
         end_time = start_time + td(seconds=60)
 
