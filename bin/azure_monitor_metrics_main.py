@@ -32,31 +32,17 @@ from timewindow import put_time_window, put_time_checkpoint
 from concurrent import futures
 from subs import get_subscription_segment, get_resources, get_azure_environment, \
     get_access_token, get_metrics_for_resources, get_secret_from_keyvault
-import splunklib.client as client
-from splunklib.modularinput import *
 
 MASK = '********'
 
-class ConnectionError(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
-
-def create_or_update_storage_password(props, session_key, ew):
+def create_or_update_storage_password(self, props, ew):
     '''
         unencrypted password in inputs.conf, encrypt it and store as storagePassword
     '''
-
-    token = {'token': session_key, 'app':'TA-Azure_Monitor'}
-    service = client.connect(**token)
-    if not isinstance(service, client.Service):
-        raise ConnectionError("Did not connect to Splunk Client.Service")
-
     try:
 
         locale = 'reference'
-        storage_passwords = service.storage_passwords
+        storage_passwords = self.service.storage_passwords
         if props['username'] in storage_passwords:
             locale = 'delete'
             storage_passwords.delete(props['username'])
@@ -67,19 +53,16 @@ def create_or_update_storage_password(props, session_key, ew):
 
     try:
         locale = 'create'
-        service.storage_passwords.create(props['password'], props['username'])
+        self.service.storage_passwords.create(props['password'], props['username'])
     except Exception as e:
         ew.log('ERROR', 'Error at locale {1} in create_or_update_storage_password: {0}'\
             .format(e, locale))
 
 
-def mask_id_and_key(self, session_key, inputs, ew):
+def mask_id_and_key(self, name, ew):
 
-    token = {'token': session_key}
-    service = client.connect(**token)
-
-    kind, input_name = 'azure_monitor_metrics://GOLIVE-Azure'.split('://')
-    item = service.inputs.__getitem__((input_name, kind))
+    kind, input_name = name.split('://')
+    item = self.service.inputs.__getitem__((input_name, kind))
 
     try:
 
@@ -107,7 +90,6 @@ def get_or_store_secrets(self, inputs, ew):
         Either way, return a set of clear text credentials
     '''
     input_name, input_items = inputs.inputs.popitem()
-    session_key = self._input_definition.metadata["session_key"]
 
     props_app_id = {}
     props_app_id['username'] = 'AzureMonitorMetricsAppID'
@@ -121,29 +103,24 @@ def get_or_store_secrets(self, inputs, ew):
 
     try:
         if props_app_id['password'] == MASK:
-            app_id, app_key = get_app_id_and_key(session_key, props_app_id, props_app_key, ew)
+            app_id, app_key = get_app_id_and_key(self, props_app_id, props_app_key, ew)
             my_inputs['SPNApplicationId'] = app_id
             my_inputs['SPNApplicationKey'] = app_key
         else:
-            create_or_update_storage_password(props_app_id, session_key, ew)
-            create_or_update_storage_password(props_app_key, session_key, ew)
-            mask_id_and_key(self, session_key, my_inputs, ew)
+            create_or_update_storage_password(self, props_app_id, ew)
+            create_or_update_storage_password(self, props_app_key, ew)
+            mask_id_and_key(self, input_name, ew)
     except Exception as e:
         ew.log('ERROR', 'Error caught in get_or_store_secrets: {0}'.format(e))
 
     return my_inputs
 
 
-def get_app_id_and_key(session_key, props_app_id, props_app_key, ew):
+def get_app_id_and_key(self, props_app_id, props_app_key, ew):
     '''
         get the encrypted app_id and app_key from storage_passwords
     '''
-    token = {'token': session_key, 'app':'TA-Azure_Monitor'}
-    service = client.connect(**token)
-    if not isinstance(service, client.Service):
-        raise ConnectionError("Did not connect to Splunk Client.Service")
-
-    storage_passwords = service.storage_passwords
+    storage_passwords = self.service.storage_passwords
     if props_app_id['username'] not in storage_passwords:
         raise KeyError('Did not find app_id {} in storage_passwords.'\
             .format(props_app_id['username']))
