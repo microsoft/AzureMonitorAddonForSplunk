@@ -46,6 +46,7 @@ var allHubs = require('./hubs.json');
 var categories = require('./logCategories.json');
 var spawnSync = require("child_process").spawnSync;
 var async = require('async');
+var path = require('path');
 
 var secretMask = '********';
 
@@ -146,7 +147,7 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
                     Logger.error(name, String.format('Error creating storage passwords: {0}', JSON.stringify(err)));
                     done (err);
                 } else {
-                    maskAppIdAndKeySync(name, session_key, singleInput);
+                    maskAppIdAndKeySync(name, session_key);
 
                     done (null, singleInput);
                 }
@@ -156,7 +157,10 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
     }
 };
 
-function maskAppIdAndKeySync (name, session_key, singleInput) {
+function maskAppIdAndKeySync (name, session_key) {
+
+    var fullpath = path.join(process.env.SPLUNK_HOME, 'bin', 'splunk');
+    Logger.info(name, String.format('program path and name is: {0}', fullpath));
 
     try {
         process.chdir(__dirname);
@@ -165,22 +169,15 @@ function maskAppIdAndKeySync (name, session_key, singleInput) {
         args.push('cmd', 'python', 'mask_secret.py');
         args.push('-n', name);
         args.push('-k', session_key);
-        args.push('-p1', singleInput.SPNTenantID);
-        args.push('-p2', secretMask);
-        args.push('-p3', secretMask);
-        args.push('-p4', singleInput.eventHubNamespace);
-        args.push('-p5', singleInput.vaultName);
-        args.push('-p6', singleInput.secretName);
-        args.push('-p7', singleInput.secretVersion);
 
-        var masker = spawnSync(process.env.SPLUNK_HOME + '\\bin\\splunk', args, { encoding: 'utf8' });
+        var masker = spawnSync(fullpath, args, { encoding: 'utf8' });
         Logger.debug(name, 'stdout: ' + masker.stdout);
         Logger.debug(name, 'stderr: ' + masker.stderr);
     }
     catch (err) {
-        Logger.Error(name, String.format('Caught error in maskAppIdAndKeySync: {0}', JSON.stringify(err)));
+        Logger.error(name, String.format('Caught error in maskAppIdAndKeySync: {0}', JSON.stringify(err)));
     }
-};
+}
 
 function createOrUpdateStoragePassword (name, storagePasswords, props, done) {
 

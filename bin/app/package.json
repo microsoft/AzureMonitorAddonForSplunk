@@ -10,7 +10,8 @@
     "request": "^2.79.0",
     "request-promise": "^4.1.1",
     "underscore": ">=1.8.3",
-    "adal-node": ">=0.1.22"
+    "adal-node": ">=0.1.22",
+    "async":">=2.3.0"
   },
   "license": "MIT",
   "author": "golive@microsoft.com"

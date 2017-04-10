@@ -30,10 +30,9 @@
 import argparse
 import splunklib.client as client
 
-def mask_password(\
-    name, session_key, tenant_id, app_id, \
-    app_key, event_hub_namespace, vault_name, \
-    secret_name, secret_version):
+MASK = '********'
+
+def mask_password(name, session_key):
     '''
         modify contents of launcher's inputs.conf
     '''
@@ -44,13 +43,13 @@ def mask_password(\
         item = service.inputs.__getitem__((input_name, kind))
 
         kwargs = {
-            'vaultName': vault_name,
-            'SPNTenantID': tenant_id,
-            'SPNApplicationId': app_id,
-            'SPNApplicationKey': app_key,
-            'eventHubNamespace': event_hub_namespace,
-            'secretName': secret_name,
-            'secretVersion': secret_version,
+            'vaultName': item.content.vaultName,
+            'SPNTenantID': item.content.SPNTenantID,
+            'SPNApplicationId': MASK,
+            'SPNApplicationKey': MASK,
+            'eventHubNamespace': item.content.eventHubNamespace,
+            'secretName': item.content.secretName,
+            'secretVersion': item.content.secretVersion,
             'index': item.content.index,
             'interval': item.content.interval,
             'sourcetype': item.content.sourcetype
@@ -68,18 +67,9 @@ def main():
     parser = argparse.ArgumentParser(description='modify values in inputs.conf')
     parser.add_argument('-n', type=str, required=True, dest='data_input_name')
     parser.add_argument('-k', type=str, required=True, dest='session_key')
-    parser.add_argument('-p1', type=str, required=True, dest='tenant_id')
-    parser.add_argument('-p2', type=str, required=True, dest='app_id')
-    parser.add_argument('-p3', type=str, required=True, dest='app_key')
-    parser.add_argument('-p4', type=str, required=True, dest='event_hub_namespace')
-    parser.add_argument('-p5', type=str, required=True, dest='vault_name')
-    parser.add_argument('-p6', type=str, required=True, dest='secret_name')
-    parser.add_argument('-p7', type=str, required=True, dest='secret_version')
     args = parser.parse_args()
 
-    mask_password(args.data_input_name, args.session_key, args.tenant_id, args.app_id, \
-                  args.app_key, args.event_hub_namespace, args.vault_name, args.secret_name, \
-                  args.secret_version)
+    mask_password(args.data_input_name, args.session_key)
 
 if __name__ == "__main__":
     main()
