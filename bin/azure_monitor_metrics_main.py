@@ -35,7 +35,7 @@ from subs import get_subscription_segment, get_resources, get_azure_environment,
 
 MASK = '********'
 
-def create_or_update_storage_password(self, props, ew):
+def create_or_update_storage_password(self, props, logger):
     '''
         unencrypted password in inputs.conf, encrypt it and store as storagePassword
     '''
@@ -48,19 +48,21 @@ def create_or_update_storage_password(self, props, ew):
             storage_passwords.delete(props['username'])
 
     except Exception as e:
-        ew.log('ERROR', 'Error at locale {1} in create_or_update_storage_password: {0}'\
+        logger('ERROR', 'Error at locale {1} in create_or_update_storage_password: {0}'\
             .format(e, locale))
 
     try:
         locale = 'create'
         self.service.storage_passwords.create(props['password'], props['username'])
     except Exception as e:
-        ew.log('ERROR', 'Error at locale {1} in create_or_update_storage_password: {0}'\
+        logger('ERROR', 'Error at locale {1} in create_or_update_storage_password: {0}'\
             .format(e, locale))
 
 
-def mask_id_and_key(self, name, ew):
-
+def mask_id_and_key(self, name, logger):
+    '''
+        masks the app_id and app_key in inputs.conf
+    '''
     kind, input_name = name.split('://')
     item = self.service.inputs.__getitem__((input_name, kind))
 
@@ -82,14 +84,15 @@ def mask_id_and_key(self, name, ew):
         item.update(**new_input).refresh()
 
     except Exception as e:
-        ew.log('ERROR', 'Error caught in mask_id_and_key: {0}'.format(e))
+        logger('ERROR', 'Error caught in mask_id_and_key: {0}'.format(e))
 
-def get_or_store_secrets(self, inputs, ew):
+def get_or_store_secrets(self, inputs, logger):
     '''
         Either read existing encyrpted password or encrypt clear text password and store it
         Either way, return a set of clear text credentials
     '''
-    input_name, input_items = inputs.inputs.popitem()
+    input_items = inputs.inputs.itervalues().next()
+    input_name = inputs.inputs.iterkeys().next()
 
     props_app_id = {}
     props_app_id['username'] = 'AzureMonitorMetricsAppID'
@@ -99,24 +102,23 @@ def get_or_store_secrets(self, inputs, ew):
     props_app_key['username'] = 'AzureMonitorMetricsAppKey'
     props_app_key['password'] = input_items["SPNApplicationKey"]
 
-    my_inputs = input_items.copy()
+    app_id = input_items["SPNApplicationId"]
+    app_key = input_items["SPNApplicationKey"]
 
     try:
         if props_app_id['password'] == MASK:
-            app_id, app_key = get_app_id_and_key(self, props_app_id, props_app_key, ew)
-            my_inputs['SPNApplicationId'] = app_id
-            my_inputs['SPNApplicationKey'] = app_key
+            app_id, app_key = get_app_id_and_key(self, props_app_id, props_app_key, logger)
         else:
-            create_or_update_storage_password(self, props_app_id, ew)
-            create_or_update_storage_password(self, props_app_key, ew)
-            mask_id_and_key(self, input_name, ew)
+            create_or_update_storage_password(self, props_app_id, logger)
+            create_or_update_storage_password(self, props_app_key, logger)
+            mask_id_and_key(self, input_name, logger)
     except Exception as e:
-        ew.log('ERROR', 'Error caught in get_or_store_secrets: {0}'.format(e))
+        logger('ERROR', 'Error caught in get_or_store_secrets: {0}'.format(e))
 
-    return my_inputs
+    return app_id, app_key
 
 
-def get_app_id_and_key(self, props_app_id, props_app_key, ew):
+def get_app_id_and_key(self, props_app_id, props_app_key, logger):
     '''
         get the encrypted app_id and app_key from storage_passwords
     '''
@@ -135,12 +137,12 @@ def get_app_id_and_key(self, props_app_id, props_app_key, ew):
         app_id = storage_passwords[props_app_id['username']].clear_password
         app_key = storage_passwords[props_app_key['username']].clear_password
     except Exception as e:
-        ew.log('ERROR', 'Error caught in get_app_id_and_key: {0}'.format(e))
+        logger('ERROR', 'Error caught in get_app_id_and_key: {0}'.format(e))
 
     return app_id, app_key
 
 
-def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups):
+def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sourcetype, checkpoint_dir):
     """
         map the resource groups to a function that gets resources
     """
@@ -158,11 +160,11 @@ def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups):
                 ew.log('ERROR', 'Resource group {0} generated an exception: {1}'
                        .format(resource_group, future.exception()))
             else:
-                get_metrics_for_resources(ew, bearer_token,
-                                          sub_url, resource_group, future.result())
+                get_metrics_for_resources(ew, bearer_token, \
+                    sub_url, resource_group, future.result(), input_sourcetype, checkpoint_dir)
 
 
-def get_metrics_for_subscription(inputs, ew):
+def get_metrics_for_subscription(inputs, app_id, app_key, ew):
     """
         top level function
         given subscription id and credentials, get metrics for all resources with the right tags
@@ -171,24 +173,28 @@ def get_metrics_for_subscription(inputs, ew):
 
     try:
 
+        metadata = inputs.metadata
+        checkpoint_dir = metadata['checkpoint_dir']
+
         locale = "put_time_window"
         # update the time window for this iteration
-        put_time_window(ew)
+        put_time_window(ew, checkpoint_dir)
 
         locale = "put_time_checkpoint"
         # and update the checkpoint for next time
-        put_time_checkpoint(ew)
+        put_time_checkpoint(ew, checkpoint_dir)
 
         # there's only one set of inputs
-        # input_name, input_item = inputs.inputs.popitem()
+        input_item = inputs.inputs.itervalues().next()
 
-        tenant_id = inputs["SPNTenantID"]
-        spn_client_id = inputs["SPNApplicationId"]
-        spn_client_secret = inputs["SPNApplicationKey"]
-        subscription_id = inputs["SubscriptionId"]
-        key_vault_name = inputs["vaultName"]
-        secret_name = inputs["secretName"]
-        secret_version = inputs["secretVersion"]
+        tenant_id = input_item["SPNTenantID"]
+        spn_client_id = app_id
+        spn_client_secret = app_key
+        subscription_id = input_item["SubscriptionId"]
+        key_vault_name = input_item["vaultName"]
+        secret_name = input_item["secretName"]
+        secret_version = input_item["secretVersion"]
+        input_sourcetype = input_item["sourcetype"]
 
         locale = "get_access_token for key vault SPN"
         authentication_endpoint = "https://login.windows.net/"
@@ -228,7 +234,7 @@ def get_metrics_for_subscription(inputs, ew):
         resource_groups = get_resources(ew, bearer_token, sub_url)
 
         locale = "get_resources_for_rgs"
-        get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups)
+        get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sourcetype, checkpoint_dir)
 
     except:
         ew.log('ERROR', 'Error caught in get_metrics_for_subscription, type: {0}, value: {1}, locale = {2}'

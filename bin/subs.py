@@ -216,7 +216,7 @@ def get_requested_metrics(resource):
 
     return set_of_requested_metrics
 
-def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq):
+def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq, input_sourcetype, checkpoint_dir):
     """
         compare metrics requested (gotten from examining tags) to available metrics
         then go get the metrics in the intersection of those sets
@@ -255,7 +255,7 @@ def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq):
 
         list_of_metrics = get_metrics_to_get(ew, bearer_token, sub_url, \
             resource_rq['resource_group_name'], resource_rq['resource'],\
-            set_of_metrics_to_get, metric_agg_type_lookup)
+            set_of_metrics_to_get, metric_agg_type_lookup, checkpoint_dir)
     except Exception as e:
         ew.log('ERROR', 'get_index_resource_metrics area 1: {0}'.format(e))
 
@@ -326,14 +326,14 @@ def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq):
             'amm_resourceName': resource_name \
         })
 
-        sourcetype = 'amm:metrics'
+        sourcetype = input_sourcetype
         if not resource_type is None:
             try:
                 sourcetype = sourcetypes[resource_type]
                 ew.log('DEBUG', 'found sourcetype: {0}'\
                     .format(sourcetype))
             except AttributeError:
-                sourcetype = 'amm:metrics'
+                sourcetype = input_sourcetype
                 ew.log('ERROR', \
                     'Resource_type: {0}, resource_id: {1}, error: {2}'\
                         .format(resource_type, resource_id, sys.exc_info()[0]))
@@ -370,7 +370,7 @@ def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq):
 
 
 def get_metrics_for_resources(ew, bearer_token, sub_url, \
-                              resource_group_name, resources):
+                              resource_group_name, resources, input_sourcetype, checkpoint_dir):
     """
         resources is a list of dict, where the dict is the resource details with
         name, type, id, tags, etc.
@@ -389,7 +389,7 @@ def get_metrics_for_resources(ew, bearer_token, sub_url, \
 
     with futures.ThreadPoolExecutor(max_workers=5) as executor:
         metrics_future = dict((executor.submit( \
-            get_index_resource_metrics, ew, bearer_token, sub_url, rq), rq) \
+            get_index_resource_metrics, ew, bearer_token, sub_url, rq, input_sourcetype, checkpoint_dir), rq) \
             for rq in list_of_requested_metrics)
 
         for future in futures.as_completed(metrics_future, None):
@@ -430,19 +430,8 @@ def get_set_of_available_metrics(ew, bearer_token, sub_url, \
     return set_of_available_metrics, metric_agg_type_lookup
 
 
-# def get_time_window():
-#     """
-#         Splunk calls once per minute. get_time_window returns a query string component that
-#         tells the API to return metrics during that 60 second window
-#     """
-    #start_time = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(time.time() - 360))
-    #end_time = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(time.time()))
-    #time_window = ' and startTime eq {0} and endTime eq {1}'.format(start_time, end_time)
-    #return time_window
-
-
 def get_metrics_to_get(ew, bearer_token, sub_url, \
-        resource_group_name, resource, set_of_metrics_to_get, metric_agg_type_lookup):
+        resource_group_name, resource, set_of_metrics_to_get, metric_agg_type_lookup, checkpoint_dir):
     """
         given the resource record, get the metrics that are available for that resource
     """
@@ -461,7 +450,7 @@ def get_metrics_to_get(ew, bearer_token, sub_url, \
     metrics_names = '(' + metrics_names + ')'
 
     # query string / time window
-    time_window = get_time_window(ew)
+    time_window = get_time_window(ew, checkpoint_dir)
 
     parameters = {'api-version': AZURE_API_VERSION_METRICS}
     parameters.update({'$filter': metrics_names + time_window})

@@ -91,7 +91,13 @@ class AzureMonitorMetrics(Script):
 
     def stream_events(self, inputs, ew):
 
-        ew.log('DEBUG', 'Azure Monitor Metrics stream_events starting.')
+        def logger(severity, message):
+            '''
+                abstract logging from ew
+            '''
+            ew.log(severity, message)
+
+        logger('DEBUG', 'Azure Monitor Metrics stream_events starting.')
 
         try:
             # put myself into the right directory for grabbing config file
@@ -99,16 +105,16 @@ class AzureMonitorMetrics(Script):
             os.chdir(dir_path)
 
             # go do the password dance
-            my_inputs = get_or_store_secrets(self, inputs, ew)
+            app_id, app_key = get_or_store_secrets(self, inputs, logger)
 
             # go do the work
-            get_metrics_for_subscription(my_inputs, ew)
+            get_metrics_for_subscription(inputs, app_id, app_key, ew)
 
         except:
-            ew.log('ERROR', 'Error caught in stream_events, type: {0}, value: {1}'\
+            logger('ERROR', 'Error caught in stream_events, type: {0}, value: {1}'\
                 .format(sys.exc_info()[0], sys.exc_info()[1]))
 
-        ew.log('DEBUG', 'Azure Monitor Metrics stream_events finishing.')
+        logger('DEBUG', 'Azure Monitor Metrics stream_events finishing.')
 
 if __name__ == "__main__":
     sys.exit(AzureMonitorMetrics().run(sys.argv))
