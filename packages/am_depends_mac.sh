@@ -1,11 +1,9 @@
 export SPLUNK_HOME=/Applications/Splunk
-apt-get update -q -y
 curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
 python get-pip.py
-#apt-get -q -y install build-essential libssl-dev libffi-dev python-dev
+pip install python-dateutil -I
 pip install PyJWT -q
-#pip install cryptography -q
-#pip install adal -q
+pip install adal -q
 pip install splunk-sdk -q
 pip install futures -q
 cp /Library/Python/2.7/site-packages/six.py $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin
