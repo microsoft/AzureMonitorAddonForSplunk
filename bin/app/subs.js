@@ -93,7 +93,7 @@ exports.getToken = function (context, resource, clientId, clientSecret) {
 
 exports.checkPointHubPartition = function (err, name, hub, idx, offset) {
 
-    checkpointsArray = checkpoints.getCheckpoints(name, hub, idx, offset);
+    checkpointsArray = checkpoints.getCheckpoints(name);
 
     var hubOffsets = checkpointsArray[hub];
     if (_.isUndefined(hubOffsets)) {
@@ -113,7 +113,7 @@ exports.checkPointHubPartition = function (err, name, hub, idx, offset) {
 
 exports.getFilterOffsets = function (name, hubName) {
 
-    checkpointsArray = checkpoints.getCheckpoints(name, hubName)
+    checkpointsArray = checkpoints.getCheckpoints(name)
     var filterOffsets = checkpointsArray[hubName];
 
     var filterOption = [0, 0, 0, 0]; // todo:: need a x-opt-offset per partition.

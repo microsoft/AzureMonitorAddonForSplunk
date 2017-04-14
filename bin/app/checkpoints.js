@@ -24,16 +24,18 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+/* jshint unused: true */
+
 var splunkjs = require("splunk-sdk");
 var ModularInputs = splunkjs.ModularInputs;
+var ModularInput = ModularInputs.ModularInput;
 var Logger = ModularInputs.Logger;
 var path = require('path');
-var Promise = require('bluebird');
 var fs = require('fs');
 
-exports.getCheckpoints = function (name, hub, idx, offset) {
+exports.getCheckpoints = function (name) {
 
-    var checkpointFileName = getCheckpointFileName(name);
+    var checkpointFileName = getCheckpointFileName();
 
     var checkpointsData = "{}";
     try {
@@ -53,7 +55,7 @@ exports.getCheckpoints = function (name, hub, idx, offset) {
 
 exports.putCheckpoints = function (err, name, checkpoints) {
 
-    var checkpointFileName = getCheckpointFileName(name);
+    var checkpointFileName = getCheckpointFileName();
     try {
         //Logger.debug(name, 'Writing checkpoint file');
         fs.writeFileSync(checkpointFileName, JSON.stringify(checkpoints));
@@ -78,13 +80,12 @@ function makeDirectoryDeep(myDirectory) {
     }
 }
 
-function getCheckpointFileName(name) {
+function getCheckpointFileName() {
 
-    var directoryName = 'azure_diagnostic_logs';
-    if (~name.indexOf('azure_activity_log:')) {
-        directoryName = 'azure_activity_log';
-    }
-    var checkpointFileName = path.join(process.env.SPLUNK_DB, 'modinputs', directoryName, 'checkpoints.json');
+    var inputDefinition = ModularInput._inputDefinition;
+    var checkpoint_dir = inputDefinition.metadata.checkpoint_dir;
+
+    var checkpointFileName = path.join(checkpoint_dir, 'checkpoints.json');
 
     if (!fs.existsSync(path.dirname(checkpointFileName))) {
         makeDirectoryDeep(checkpointFileName);

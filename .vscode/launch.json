@@ -22,8 +22,8 @@
             "request": "launch",
             "stopOnEntry": true,
             "pythonPath": "${config.python.pythonPath}",
-            "program": "c:\\github\\SplunkAddonForAzureMonitorLogs\\test\\launcher.py",
-            "cwd": "c:\\github\\SplunkAddonForAzureMonitorLogs",
+            "program": "c:\\github\\AzureMonitorAddonForSplunk\\test\\launcher.py",
+            "cwd": "c:\\github\\AzureMonitorAddonForSplunk",
             "debugOptions": [
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit",

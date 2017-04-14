@@ -1,7 +1,11 @@
 # dev environment
 test/singleInput.json
-deployment
+test/secrets.json
+test/*.txt
+deployment/TA-Azure_Monitor
+deployment/temp
 modinputs
+*.pyc
 
 # Logs
 logs
