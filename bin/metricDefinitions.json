@@ -1,0 +1,78 @@
+{
+    "Microsoft.Web/sites/slots": {
+        "metrics": [
+            "CpuTime",
+            "Requests",
+            "BytesReceived",
+            "BytesSent",
+            "Http101",
+            "Http2xx",
+            "Http3xx",
+            "Http401",
+            "Http403",
+            "Http404",
+            "Http406",
+            "Http4xx",
+            "Http5xx",
+            "MemoryWorkingSet",
+            "AverageMemoryWorkingSet",
+            "AverageResponseTime"
+        ]
+    },
+    "Microsoft.Sql/servers": {
+        "metrics": []
+    },
+    "Microsoft.Network/networkSecurityGroups": {
+        "metrics": []
+    },
+    "Microsoft.Web/sites": {
+        "metrics": [
+            "CpuTime",
+            "Requests",
+            "BytesReceived",
+            "BytesSent",
+            "Http101",
+            "Http2xx",
+            "Http3xx",
+            "Http401",
+            "Http403",
+            "Http404",
+            "Http406",
+            "Http4xx",
+            "Http5xx",
+            "MemoryWorkingSet",
+            "AverageMemoryWorkingSet",
+            "AverageResponseTime"
+        ]
+    },
+    "Microsoft.Sql/servers/databases": {
+        "metrics": [
+            "cpu_percent",
+            "physical_data_read_percent",
+            "log_write_percent",
+            "dtu_consumption_percent",
+            "storage",
+            "connection_successful",
+            "connection_failed",
+            "blocked_by_firewall",
+            "deadlock",
+            "storage_percent",
+            "xtp_storage_percent",
+            "workers_percent",
+            "sessions_percent",
+            "dtu_limit",
+            "dtu_used"
+        ]
+    },
+    "Microsoft.Compute/virtualMachines": {
+        "metrics": [
+            "Percentage CPU",
+            "Network In",
+            "Network Out",
+            "Disk Read Bytes",
+            "Disk Write Bytes",
+            "Disk Read Operations/Sec",
+            "Disk Write Operations/Sec"
+        ]
+    }
+}

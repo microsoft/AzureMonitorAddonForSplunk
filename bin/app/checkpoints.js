@@ -45,7 +45,7 @@ exports.getCheckpoints = function (name) {
         if (err.code === 'ENOENT') { }
         else {
             Logger.debug(name, 'Caught error reading checkpoint file: ' + err);
-            checkpointsData = "{}"
+            checkpointsData = "{}";
         }
     }
     checkpointsObject = JSON.parse(checkpointsData);

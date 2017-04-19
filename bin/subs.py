@@ -346,6 +346,11 @@ def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq, input_sou
                 ew.log('ERROR',
                        'Resource_type: {0}, resource_id: {1}, error: {2}'
                        .format(resource_type, resource_id, sys.exc_info()[0]))
+            except KeyError:
+                sourcetype = input_sourcetype
+                ew.log('WARN',
+                       'Resource_type: {0}, missing from sourcetypes.json.'
+                       .format(resource_type))
             except:
                 ew.log('ERROR', 'Resource_type: {0}, some other error: {1}'
                        .format(resource_type, sys.exc_info()[0]))
