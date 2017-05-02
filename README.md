@@ -14,6 +14,8 @@ Here are a few resources if you want to learn more about Azure Monitor:<br/>
 
 See the [Wiki](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Azure-Monitor-Addon-For-Splunk) for detailed installation and configuration instructions. Release Notes (aka changelog) is also available in the wiki.
 
+*NOTE:* Please note that version 1.1.0 implements the automatic installation of python and nodejs dependencies on Linux using a shell script. The details are described in the [Wiki.](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Azure-Monitor-Addon-For-Splunk)  
+
 ### What's an Azure AD Service Principal and where can I get one?
 See here: [Use portal to create Active Directory application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)<br/>
 
@@ -21,7 +23,7 @@ See here: [Use portal to create Active Directory application and service princip
 
 If you have encountered difficulties with the add-on, the first thing to do is ensure that all Python and Nodejs dependencies are installed correctly according to the installation instructions in the wiki.  
 
-If that doesn't help, the next thing to do is switch logging for ExecProcessor to Debug (Settings / Server Logging in Splunk Web) and recycle the add-on (disable/enable). Then search for 'azure_monitor' ERROR and DEBUG messages. There will be a lot of DEBUG messages. If you don't see anything helpful, open an issue in the repo.  
+If that doesn't help, the next thing to do is switch logging for ExecProcessor to Debug (Settings / Server Settings / Server Logging in Splunk Web) and recycle the add-on (disable/enable). Then search for 'azure_monitor' ERROR and DEBUG messages. There will be a lot of DEBUG messages. If you don't see anything helpful, open an issue in the repo.  
 
 # Contributing
 
