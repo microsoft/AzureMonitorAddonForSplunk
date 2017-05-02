@@ -14,6 +14,8 @@ Here are a few resources if you want to learn more about Azure Monitor:<br/>
 
 See the [Wiki](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Azure-Monitor-Addon-For-Splunk) for detailed installation and configuration instructions. Release Notes (aka changelog) is also available in the wiki.
 
+*NOTE* Please note that version 1.1.0 implements the automatic installation of python and nodejs dependencies on Linux using a shell script. The details are described in the [Wiki.](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Azure-Monitor-Addon-For-Splunk)  
+
 ### What's an Azure AD Service Principal and where can I get one?
 See here: [Use portal to create Active Directory application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)<br/>
 
