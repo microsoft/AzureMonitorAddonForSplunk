@@ -24,14 +24,10 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-var splunkjs = require("splunk-sdk");
-var ModularInputs = splunkjs.ModularInputs;
-var Logger = ModularInputs.Logger;
-
+/* jshint unused: true */
+//
 var Promise = require('bluebird');
 var rp = require('request-promise');
-var fs = require('fs');
-var path = require('path');
 var _ = require('underscore');
 var adal = require('adal-node');
 var translator = require('amqp10').translator;
