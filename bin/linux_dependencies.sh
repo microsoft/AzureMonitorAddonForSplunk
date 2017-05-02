@@ -1,8 +1,8 @@
 #!/bin/bash
-echo $(date) "Logging break - apt-get update"
 #
 # eliminate Splunk from various environment settings
 #
+echo $(date) "Logging break - apt-get update"
 export LD_LIBRARY_PATH=""
 export PYTHONPATH=""
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
@@ -62,28 +62,6 @@ fi
 dpkg -s python-dev
 if [[ $? -ne 0 ]]; then
     apt-get -y -qq install python-dev
-fi
-#
-# test if pyopenssl is installed, if not, install it (required for building splunk-sdk)
-#
-echo $(date) "Logging break - install packages for installing splunk-sdk"
-pip show pyopenssl
-if [[ $? -ne 0 ]]; then
-    pip install pyopenssl
-fi
-#
-# test if ndg-httpsclient is installed, if not, install it (required for building splunk-sdk)
-#
-pip show ndg-httpsclient
-if [[ $? -ne 0 ]]; then
-    pip install ndg-httpsclient
-fi
-#
-# test if pyasn1 is installed, if not, install it (required for building splunk-sdk)
-#
-pip show pyasn1
-if [[ $? -ne 0 ]]; then
-    pip install pyasn1
 fi
 #
 # test if adal is installed, if not, install it (builds cryptography and a couple of others)
