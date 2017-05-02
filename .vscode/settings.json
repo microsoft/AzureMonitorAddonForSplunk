@@ -41,10 +41,8 @@
                     "bin/app/logCategories.json",
                     "bin/app/hubs.json",
                     "bin/app/mask_secret.py",
-                    "bin/azure_diagnostic_logs.cmd",
-                    "bin/azure_diagnostic_logs.sh",
-                    "bin/azure_activity_log.cmd",
-                    "bin/azure_activity_log.sh",
+                    "bin/*.cmd",
+                    "bin/*.sh",
                     "bin/*.py",
                     "bin/sourcetypes.json"
                 ]

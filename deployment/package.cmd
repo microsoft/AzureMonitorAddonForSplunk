@@ -1,11 +1,9 @@
-set version=TA-Azure_Monitor_1_0_1
+set version=TA-Azure_Monitor_1_1_0
 cd deployment
 del temp\%version%.spl
 del ..\packages\%version%.spl
-7z a -ttar temp\%version%.tar TA-Azure_Monitor\bin\azure_diagnostic_logs.cmd
-7z a -ttar temp\%version%.tar TA-Azure_Monitor\bin\azure_diagnostic_logs.sh
-7z a -ttar temp\%version%.tar TA-Azure_Monitor\bin\azure_activity_log.cmd
-7z a -ttar temp\%version%.tar TA-Azure_Monitor\bin\azure_activity_log.sh
+7z a -ttar temp\%version%.tar TA-Azure_Monitor\bin\*.cmd
+7z a -ttar temp\%version%.tar TA-Azure_Monitor\bin\*.sh
 7z a -ttar temp\%version%.tar TA-Azure_Monitor\bin\*.py
 7z a -ttar temp\%version%.tar TA-Azure_Monitor\bin\sourcetypes.json
 7z a -ttar temp\%version%.tar TA-Azure_Monitor\bin\app\*.js
