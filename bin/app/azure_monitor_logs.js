@@ -160,7 +160,7 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
 function maskAppIdAndKeySync (name, session_key) {
 
     var fullpath = path.join(process.env.SPLUNK_HOME, 'bin', 'splunk');
-    Logger.info(name, String.format('program path and name is: {0}', fullpath));
+    Logger.debug(name, String.format('program path and name is: {0}', fullpath));
 
     try {
         process.chdir(__dirname);

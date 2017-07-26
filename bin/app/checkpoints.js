@@ -35,7 +35,7 @@ var fs = require('fs');
 
 exports.getCheckpoints = function (name) {
 
-    var checkpointFileName = getCheckpointFileName();
+    var checkpointFileName = getCheckpointFileName(name);
 
     var checkpointsData = "{}";
     try {
@@ -55,7 +55,7 @@ exports.getCheckpoints = function (name) {
 
 exports.putCheckpoints = function (err, name, checkpoints) {
 
-    var checkpointFileName = getCheckpointFileName();
+    var checkpointFileName = getCheckpointFileName(name);
     try {
         //Logger.debug(name, 'Writing checkpoint file');
         fs.writeFileSync(checkpointFileName, JSON.stringify(checkpoints));
@@ -80,12 +80,14 @@ function makeDirectoryDeep(myDirectory) {
     }
 }
 
-function getCheckpointFileName() {
+function getCheckpointFileName(name) {
 
     var inputDefinition = ModularInput._inputDefinition;
     var checkpoint_dir = inputDefinition.metadata.checkpoint_dir;
 
-    var checkpointFileName = path.join(checkpoint_dir, 'checkpoints.json');
+    var dataInputName = name.substring(name.indexOf('://') + 3);
+
+    var checkpointFileName = path.join(checkpoint_dir, dataInputName + '_checkpoints.json');
 
     if (!fs.existsSync(path.dirname(checkpointFileName))) {
         makeDirectoryDeep(checkpointFileName);
