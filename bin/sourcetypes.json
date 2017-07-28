@@ -1,5 +1,7 @@
 {
     "MICROSOFT.COMPUTE/VIRTUALMACHINES": "amm:compute:vm",
     "MICROSOFT.WEB/SITES":"amm:web:sites",
-    "MICROSOFT.SQL/SERVERS/DATABASES": "amm:sqlserver:database"
+    "MICROSOFT.SQL/SERVERS/DATABASES": "amm:sqlserver:database",
+    "MICROSOFT.SQL/SERVERS": "amm:sqlserver:server",
+    "MICROSOFT.EVENTHUB/NAMESPACES": "amm:eventhub:namespace"
 }

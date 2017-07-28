@@ -31,13 +31,13 @@ import os
 from datetime import datetime, timedelta as td
 import json
 
-def get_time_window(event_writer, checkpoint_dir):
+def get_time_window(event_writer, checkpoint_dict):
     '''
         get the current time window. time window is calculated on entry to this iteration of
         the add-on. in the routine that indexes metrics, the time window is retrieved. same
         time window is used for the entire iteration.
     '''
-    filename = os.path.join(checkpoint_dir, 'timewindow.txt')
+    filename = timewindow_file_name(checkpoint_dict)
 
     try:
         with open(filename) as data_file:
@@ -47,7 +47,7 @@ def get_time_window(event_writer, checkpoint_dir):
 
     return time_window
 
-def put_time_window(event_writer, checkpoint_dir):
+def put_time_window(event_writer, checkpoint_dict):
     '''
         Azure writes metrics a bit time-lagged. If the time window is 60
         seconds ending now, chances are that the metric hasn't arrived.
@@ -56,7 +56,7 @@ def put_time_window(event_writer, checkpoint_dir):
         and then is the checkpoint (earlier) time - 60
     '''
     end_time = datetime.utcnow() - td(seconds=60)
-    start_time = get_time_checkpoint(event_writer, checkpoint_dir) - td(seconds=60)
+    start_time = get_time_checkpoint(event_writer, checkpoint_dict) - td(seconds=60)
     if start_time + td(seconds=60) > end_time:
         end_time = start_time + td(seconds=60)
 
@@ -64,7 +64,7 @@ def put_time_window(event_writer, checkpoint_dir):
         .format(start_time.strftime('%Y-%m-%dT%H:%M:%SZ'), \
                 end_time.strftime('%Y-%m-%dT%H:%M:%SZ'))
 
-    filename = os.path.join(checkpoint_dir, 'timewindow.txt')
+    filename = timewindow_file_name(checkpoint_dict)
 
     try:
         with open(filename, 'w') as data_file:
@@ -73,7 +73,7 @@ def put_time_window(event_writer, checkpoint_dir):
         event_writer.log('ERROR', 'Could not write time window, error: {0}'.format(err))
 
 
-def put_time_checkpoint(event_writer, checkpoint_dir):
+def put_time_checkpoint(event_writer, checkpoint_dict):
     '''
         update the time checkpoint. it is a serialized datetime.
     '''
@@ -88,7 +88,7 @@ def put_time_checkpoint(event_writer, checkpoint_dir):
         'microsecond': now.microsecond
     }
 
-    filename = os.path.join(checkpoint_dir, 'timecheckpoint.txt')
+    filename = checkpoint_file_name(checkpoint_dict)
 
     try:
         with open(filename, 'w') as data_file:
@@ -97,11 +97,11 @@ def put_time_checkpoint(event_writer, checkpoint_dir):
         event_writer.log('ERROR', 'Could not write time checkpoint, error: {0}'.format(err))
 
 
-def get_time_checkpoint(event_writer, checkpoint_dir):
+def get_time_checkpoint(event_writer, checkpoint_dict):
     '''
         The time checkpoint is a serialized datetime. Initialize it with now.
     '''
-    filename = os.path.join(checkpoint_dir, 'timecheckpoint.txt')
+    filename = checkpoint_file_name(checkpoint_dict)
 
     try:
         with open(filename) as data_file:
@@ -112,3 +112,15 @@ def get_time_checkpoint(event_writer, checkpoint_dir):
         time_checkpoint = datetime.utcnow()
 
     return time_checkpoint
+
+def checkpoint_file_name(checkpoint_dict):
+    '''
+    build & return file name of the checkpoint file
+    '''
+    return os.path.join(checkpoint_dict["checkpoint_dir"], checkpoint_dict["instance_name"] + '_timecheckpoint.txt')
+
+def timewindow_file_name(checkpoint_dict):
+    '''
+    build & return file name of the timewindow file
+    '''
+    return os.path.join(checkpoint_dict["checkpoint_dir"], checkpoint_dict["instance_name"] + '_timewindow.txt')

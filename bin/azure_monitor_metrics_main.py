@@ -142,7 +142,7 @@ def get_app_id_and_key(self, props_app_id, props_app_key, logger):
     return app_id, app_key
 
 
-def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sourcetype, checkpoint_dir):
+def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sourcetype, checkpoint_dict):
     """
         map the resource groups to a function that gets resources
     """
@@ -161,7 +161,7 @@ def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sour
                        .format(resource_group, future.exception()))
             else:
                 get_metrics_for_resources(ew, bearer_token, \
-                    sub_url, resource_group, future.result(), input_sourcetype, checkpoint_dir)
+                    sub_url, resource_group, future.result(), input_sourcetype, checkpoint_dict)
 
 
 def get_metrics_for_subscription(inputs, app_id, app_key, ew):
@@ -171,21 +171,24 @@ def get_metrics_for_subscription(inputs, app_id, app_key, ew):
         splunk sends an array of inputs, but only one element, hence the [0]
     """
 
+    metadata = inputs.metadata
+    input_name, input_item = inputs.inputs.popitem()
+    stanza = input_name.split('://')
+    instance_name = stanza[1]
+
     try:
 
-        metadata = inputs.metadata
+        locale = "checkpoint file data"
         checkpoint_dir = metadata['checkpoint_dir']
+        checkpoint_dict = {"checkpoint_dir":checkpoint_dir, "instance_name": instance_name}
 
         locale = "put_time_window"
         # update the time window for this iteration
-        put_time_window(ew, checkpoint_dir)
+        put_time_window(ew, checkpoint_dict)
 
         locale = "put_time_checkpoint"
         # and update the checkpoint for next time
-        put_time_checkpoint(ew, checkpoint_dir)
-
-        # there's only one set of inputs
-        input_item = inputs.inputs.itervalues().next()
+        put_time_checkpoint(ew, checkpoint_dict)
 
         tenant_id = input_item["SPNTenantID"]
         spn_client_id = app_id
@@ -234,7 +237,7 @@ def get_metrics_for_subscription(inputs, app_id, app_key, ew):
         resource_groups = get_resources(ew, bearer_token, sub_url)
 
         locale = "get_resources_for_rgs"
-        get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sourcetype, checkpoint_dir)
+        get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sourcetype, checkpoint_dict)
 
     except:
         ew.log('ERROR', 'Error caught in get_metrics_for_subscription, type: {0}, value: {1}, locale = {2}'

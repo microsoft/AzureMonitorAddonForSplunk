@@ -222,7 +222,7 @@ def get_requested_metrics(resource):
     return set_of_requested_metrics
 
 
-def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq, input_sourcetype, checkpoint_dir):
+def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq, input_sourcetype, checkpoint_dict):
     """
         compare metrics requested (gotten from examining tags) to available metrics
         then go get the metrics in the intersection of those sets
@@ -263,7 +263,7 @@ def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq, input_sou
 
         list_of_metrics = get_metrics_to_get(ew, bearer_token, sub_url,
                                              resource_rq['resource_group_name'], resource_rq['resource'],
-                                             set_of_metrics_to_get, checkpoint_dir)
+                                             set_of_metrics_to_get, checkpoint_dict)
     except Exception as e:
         ew.log('ERROR', 'get_index_resource_metrics area 1: {0}'.format(e))
 
@@ -384,7 +384,7 @@ def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq, input_sou
 
 
 def get_metrics_for_resources(ew, bearer_token, sub_url,
-                              resource_group_name, resources, input_sourcetype, checkpoint_dir):
+                              resource_group_name, resources, input_sourcetype, checkpoint_dict):
     """
         resources is a list of dict, where the dict is the resource details with
         name, type, id, tags, etc.
@@ -403,7 +403,7 @@ def get_metrics_for_resources(ew, bearer_token, sub_url,
 
     with futures.ThreadPoolExecutor(max_workers=5) as executor:
         metrics_future = dict((executor.submit(
-            get_index_resource_metrics, ew, bearer_token, sub_url, rq, input_sourcetype, checkpoint_dir), rq)
+            get_index_resource_metrics, ew, bearer_token, sub_url, rq, input_sourcetype, checkpoint_dict), rq)
             for rq in list_of_requested_metrics)
 
         for future in futures.as_completed(metrics_future, None):
@@ -452,7 +452,7 @@ def get_set_of_available_metrics(ew, bearer_token, sub_url,
 
 
 def get_metrics_to_get(ew, bearer_token, sub_url,
-                       resource_group_name, resource, set_of_metrics_to_get, checkpoint_dir):
+                       resource_group_name, resource, set_of_metrics_to_get, checkpoint_dict):
     """
         given the resource record, get the metrics that are available for that resource
     """
@@ -472,7 +472,7 @@ def get_metrics_to_get(ew, bearer_token, sub_url,
     metrics_names = '(' + metrics_names + ')'
 
     # query string / time window
-    time_window = get_time_window(ew, checkpoint_dir)
+    time_window = get_time_window(ew, checkpoint_dict)
 
     parameters = {'api-version': AZURE_API_VERSION_METRICS}
     parameters.update({'$filter': metrics_names + time_window})

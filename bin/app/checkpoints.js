@@ -87,7 +87,16 @@ function getCheckpointFileName(name) {
 
     var dataInputName = name.substring(name.indexOf('://') + 3);
 
+    var oldCheckpointFileName = path.join(checkpoint_dir, 'checkpoints.json');
     var checkpointFileName = path.join(checkpoint_dir, dataInputName + '_checkpoints.json');
+
+    try {
+        if (fs.existsSync(oldCheckpointFileName)) {
+            fs.renameSync(oldCheckpointFileName, checkpointFileName);
+        }
+    } catch (err) {
+        Logger.info(name, "Error renaming checkpoint file: " + err);
+    }
 
     if (!fs.existsSync(path.dirname(checkpointFileName))) {
         makeDirectoryDeep(checkpointFileName);
