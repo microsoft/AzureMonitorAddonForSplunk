@@ -47,6 +47,7 @@ var categories = require('./logCategories.json');
 var spawnSync = require("child_process").spawnSync;
 var async = require('async');
 var path = require('path');
+var environments = require('environments.json');
 
 var secretMask = '********';
 
@@ -477,7 +478,8 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
         done();
     };
 
-    var serviceBusHost = eventHubNamespace + '.servicebus.windows.net';
+    var environment = subs.getEnvironment();
+    var serviceBusHost = eventHubNamespace + environments[environment].serviceBusDns;
     subs.getEventHubCreds(SPNName, SPNPassword, SPNTenantID, vaultName, secretName, secretVersion)
         .then(function (creds) {
 
