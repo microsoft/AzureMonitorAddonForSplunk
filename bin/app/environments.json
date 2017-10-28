@@ -1,0 +1,26 @@
+{
+    "AzureCloud": {
+        "activeDirectory": "https://login.microsoftonline.com",
+        "keyvaultDns": ".vault.azure.net",
+        "keyvaultResource": "https://vault.azure.net",
+        "serviceBusDns": ".servicebus.windows.net"
+    },
+    "AzureUSGovernment": {
+        "activeDirectory": "https://login.microsoftonline.com",
+        "keyvaultDns": ".vault.usgovcloudapi.net",
+        "keyvaultResource": "https://vault.usgovcloudapi.net",
+        "serviceBusDns": ".servicebus.usgovcloudapi.net"
+    },
+    "AzureChinaCloud": {
+        "activeDirectory": "https://login.chinacloudapi.cn",
+        "keyvaultDns": ".vault.azure.cn",
+        "keyvaultResource": "https://vault.azure.cn",
+        "serviceBusDns": ".servicebus.chinacloudapi.cn"
+    },
+    "AzureGermanCloud": {
+        "activeDirectory": "https://login.microsoftonline.de",
+        "keyvaultDns": ".vault.microsoftazure.de",
+        "keyvaultResource": "https://vault.microsoftazure.de",
+        "serviceBusDns": ".servicebus.cloudapi.de"
+    }
+}
