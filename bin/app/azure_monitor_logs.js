@@ -239,80 +239,142 @@ function createOrUpdateStoragePassword (name, storagePasswords, props, done) {
 }
 
 
-var messageHandler = function (name, data, eventWriter) {
-
-    //var dataAsString = JSON.stringify(data);
-    Logger.debug(name, String.format('streamEvents.messageHandler got data for data input named: {0}', name));
-    //Logger.debug(name, String.format('{0}', dataAsString));
-
-    var resourceId = data.resourceId.toUpperCase() || '';
-    var subscriptionId = '';
-    var resourceGroup = '';
-    var resourceName = '';
-    var resourceType = '';
-    if (resourceId.length > 0) {
-        var match = resourceId.match('SUBSCRIPTIONS\/(.*?)\/');
-        if (!_.isNull(match)) {
-            subscriptionId = match[1];
-            data.am_subscriptionId = subscriptionId;
-        }
-        match = resourceId.match('SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
-        if (!_.isNull(match)) {
-            resourceGroup = match[1];
-            data.am_resourceGroup = resourceGroup;
-        }
-        match = resourceId.match('PROVIDERS\/(.*?\/.*?)(?:\/)');
-        if (!_.isNull(match)) {
-            resourceType = match[1];
-            data.am_resourceType = resourceType;
-        }
-        match = resourceId.match('PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
-        if (!_.isNull(match)) {
-            resourceName = match[1];
-            data.am_resourceName = resourceName;
-        }
-    }
-
-    var sourceType = '';
-    if (~name.indexOf('azure_activity_log:')) {
-        sourceType = 'amal:activityLog';
-    } else {
-        sourceType = 'amdl:diagnosticLogs';
-
-        var category = data.category.toUpperCase() || '';
-        if (resourceType !== '') {
-            var testSourceType = categories[resourceType + '/' + category];
-            if (!_.isUndefined(testSourceType) && testSourceType.length > 0) {
-                sourceType = testSourceType;
+function getElement(resourceId, elementRegex) {
+    
+        if (resourceId.length > 0) {
+            var match = resourceId.match(elementRegex);
+            if (!_.isNull(match)) {
+                return match[1];
             }
         }
+    
+        return '';
     }
-
-    Logger.debug(name, String.format('Subscription ID: {0}, resourceType: {1}, resourceName: {2}, sourceType: {3}',
-        subscriptionId, resourceType, resourceName, sourceType));
-
-    var curEvent = new Event({
-        stanza: name,
-        sourcetype: sourceType,
-        data: data
-    });
-
-    try {
-        eventWriter.writeEvent(curEvent);
-        Logger.debug(name, String.format('streamEvents.messageHandler wrote an event'));
+    
+    function getAMDLsourcetype(category, resourceType) {
+    
+        if (resourceType !== '') {
+            testSourceType = categories[resourceType + '/' + category];
+            if (!_.isUndefined(testSourceType) && testSourceType.length > 0) {
+                return testSourceType;
+            }
+        }
+    
+        return "amdl:diagnosticLogs";
     }
-    catch (e) {
-        errorFound = true; // Make sure we stop streaming if there's an error at any point
-        Logger.error(name, e.message);
-        done(e);
-
-        // we had an error; die
-        return;
+    
+    function getAMALsourcetype(name, operationName) {
+    
+        var splits = operationName.split("/");
+    
+        if (splits.length < 3) {
+            
+            // this catches the free form text in some ASC recommendations
+            // and the one starting with TCP/IP
+    
+            return 'amal:ascRecommendation';
+    
+        } else if (splits.length >= 3) {
+            
+            var provider = splits[0].toUpperCase();
+            var type = splits[1].toUpperCase();
+            var operation = splits[2].toUpperCase();
+    
+            switch (provider) {
+                case 'MICROSOFT.SERVICEHEALTH':
+                    return 'amal:serviceHealth';
+                case 'MICROSOFT.RESOURCEHEALTH':
+                    return 'amal:resourceHealth';
+                case 'MICROSOFT.INSIGHTS':
+                    if (type == 'AUTOSCALESETTINGS') {
+                        return 'amal:autoscaleSettings';
+                    } else if (type == 'ALERTRULES') {
+                        return 'amal:ascAlert';
+                    } else {
+                        return 'amal:insights';
+                    }
+                    break;
+                case 'MICROSOFT.SECURITY':
+                    if (type == 'APPLICATIONWHITELISTINGS') {
+                        if (operation == 'ACTION') {
+                            return 'amal:ascAlert';
+                        } else {
+                            return 'amal:security';
+                        }
+                    } else if (type == 'LOCATIONS') {
+                        return 'amal:security';
+                    } else if (type == 'TASKS') {
+                        return 'amal:ascRecommendation';
+                    }
+                    break;
+                default: {
+                    return 'amal:administrative';
+                }
+            }
+    
+        }
+    
+        return 'amal:activityLog';
     }
-
-};
-
-exports.getScheme = function (schemeName, schemeDesc) {
+    
+    var messageHandler = function (name, data, eventWriter) {
+    
+        Logger.debug(name, String.format('streamEvents.messageHandler got data for data input named: {0}', name));
+    
+        // get identifiers from resource id
+        var resourceId = data.resourceId.toUpperCase() || '';
+        var subscriptionId = getElement(resourceId, 'SUBSCRIPTIONS\/(.*?)\/');
+        var resourceGroup = getElement(resourceId, 'SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
+        var resourceName = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
+        var resourceType = getElement(resourceId, 'PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
+    
+        // add identifiers as standard properties to the event
+        if (subscriptionId.length > 0) {
+            data.am_subscriptionId = subscriptionId;
+        }
+        if (resourceGroup.length > 0) {
+            data.am_resourceGroup = resourceGroup;
+        }
+        if (resourceName.length > 0) {
+            data.am_resourceName = resourceName;
+        }
+        if (resourceType.length > 0) {
+            data.am_resourceType = resourceType;
+        }
+        
+        // get the sourcetype based on the message category and data input type
+        var sourceType = '';
+        if (~name.indexOf('azure_activity_log:')) {
+            sourceType = getAMALsourcetype(name, data.operationName.value);
+        } else {
+            sourceType = getAMDLsourcetype(data.category.toUpperCase() || '', resourceType);
+        }            
+    
+        Logger.debug(name, String.format('Event identifiers are: Subscription ID: {0}, resourceType: {1}, resourceName: {2}, sourceType: {3}',
+            subscriptionId, resourceType, resourceName, sourceType));
+    
+        var curEvent = new Event({
+            stanza: name,
+            sourcetype: sourceType,
+            data: data
+        });
+    
+        try {
+            eventWriter.writeEvent(curEvent);
+            Logger.debug(name, String.format('streamEvents.messageHandler wrote an event'));
+        }
+        catch (e) {
+            errorFound = true; // Make sure we stop streaming if there's an error at any point
+            Logger.error(name, e.message);
+            done(e);
+    
+            // we had an error; die
+            return;
+        }
+    
+    };
+    
+    exports.getScheme = function (schemeName, schemeDesc) {
 
     var scheme = new Scheme(schemeName);
 
