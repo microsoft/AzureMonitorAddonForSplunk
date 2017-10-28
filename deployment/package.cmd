@@ -1,4 +1,4 @@
-set version=TA-Azure_Monitor_1_2_2
+set version=TA-Azure_Monitor_1_2_3
 cd deployment
 del temp\%version%.spl
 del ..\packages\%version%.spl
@@ -16,4 +16,6 @@ del ..\packages\%version%.spl
 7z a -ttar temp\%version%.tar TA-Azure_Monitor\README.md
 copy temp\%version%.tar temp\%version%.spl
 7z a -tgzip ..\packages\%version%.spl temp\%version%.spl
+del temp\%version%.spl
+del temp\%version%.tar
 exit

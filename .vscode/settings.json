@@ -39,6 +39,7 @@
                     "bin/app/sourcetypes.json",
                     "bin/app/package.json",
                     "bin/app/logCategories.json",
+                    "bin/app/environments.json",
                     "bin/app/hubs.json",
                     "bin/app/mask_secret.py",
                     "bin/*.cmd",

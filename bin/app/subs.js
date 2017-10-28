@@ -37,11 +37,15 @@ var checkpoints = require('./checkpoints');
 
 var AZUREAPIVERSIONKV = '2016-10-01';
 
+var environments = require('./environments.json');
+
 exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultName, secretName, secretVersion) {
-    var authorityUrl = 'https://login.windows.net/' + SPNTenantID;
+    
+    var environment = exports.getEnvironment();
+    var authorityUrl = environments[environment].activeDirectory + '/' + SPNTenantID;
     var AuthenticationContext = adal.AuthenticationContext;
     var context = new AuthenticationContext(authorityUrl);
-    var resource = 'https://vault.azure.net';
+    var resource = environments[environment].keyvaultResource;
 
     return new Promise(function (resolve, reject) {
         exports.getToken(context, resource, SPNName, SPNPassword)
@@ -49,7 +53,7 @@ exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultNam
 
                 bearerToken = tokenResponse.accessToken;
 
-                var kvUri = String.format('https://{0}.vault.azure.net/secrets/{1}/{2}', vaultName, secretName, secretVersion);
+                var kvUri = String.format('https://{0}{1}/secrets/{2}/{3}', vaultName, environments[environment].keyvaultDns, secretName, secretVersion);
 
                 var options = {
                     uri: kvUri,
@@ -72,9 +76,23 @@ exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultNam
             .catch(function (err) {
                 return reject(err);
             });
-    })
-}
+    });
+};
 
+exports.getEnvironment = function() {
+
+    var environment = 'AzureCloud';
+    var envVarEnvironment = process.env.AZURE_ENVIRONMENT;
+    switch (envVarEnvironment) {
+        case 'AzureUSGovernment':
+        case 'AzureChinaCloud':
+        case 'AzureGermanCloud':
+            environment = envVarEnvironment;
+            break;
+    }
+    return environment;
+
+};
 
 exports.getToken = function (context, resource, clientId, clientSecret) {
     return new Promise(function (resolve, reject) {
