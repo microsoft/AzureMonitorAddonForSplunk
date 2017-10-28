@@ -37,7 +37,7 @@ var checkpoints = require('./checkpoints');
 
 var AZUREAPIVERSIONKV = '2016-10-01';
 
-var environments = require('environments.json');
+var environments = require('./environments.json');
 
 exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultName, secretName, secretVersion) {
     

@@ -1,7 +1,8 @@
-### NOTE:  
-Please log your feature requests as issues.  
-
 # Azure Monitor Add-on for Splunk
+
+## NOTE
+
+Please log your feature requests as issues.
 
 This add-on is built using Node.js and Python 2.7 and has been tested on Ubuntu 14.04, Windows 10 and Mac OS X.
 
