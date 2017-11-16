@@ -1,4 +1,4 @@
-set version=TA-Azure_Monitor_1_2_3
+set version=TA-Azure_Monitor_1_2_3_1
 cd deployment
 del temp\%version%.spl
 del ..\packages\%version%.spl

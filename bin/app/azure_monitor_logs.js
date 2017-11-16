@@ -265,6 +265,10 @@ function getAMDLsourcetype(category, resourceType) {
 
 function getAMALsourcetype(name, operationName) {
 
+    if (operationName === '') {
+        return 'amal:activityLog';
+    }
+
     var splits = operationName.split("/");
 
     if (splits.length < 3) {
@@ -347,12 +351,12 @@ var messageHandler = function (name, data, eventWriter) {
 
     if (~name.indexOf('azure_activity_log:')) {
 
-        var operationNameRaw = data.operationName;
+        var operationNameRaw = data.operationName.toUpperCase() || '';
         var operationName = '';
         if (_.isString(operationNameRaw)) {
             operationName = operationNameRaw;
         } else if (_.isObject(operationNameRaw)) {
-            operationName = operationNameRaw.value;
+            operationName = operationNameRaw.value.toUpperCase() || '';
         } else {
             operationName = "MICROSOFT.BOGUS/THISISANERROR/ACTION";
         }

@@ -1,12 +1,8 @@
-export SPLUNK_HOME=/tools/splunk
+export SPLUNK_HOME=/opt/splunk
 export PYTHON_SITEPACKAGES=/usr/lib/python2.7/site-packages
-yum update
 wget https://bootstrap.pypa.io/get-pip.py
 python get-pip.py
-sudo yum install gcc libffi-devel python-devel openssl-devel
 pip install six -I 
-pip install PyJWT 
-pip install cryptography 
 pip install adal 
 pip install splunk-sdk 
 pip install futures
