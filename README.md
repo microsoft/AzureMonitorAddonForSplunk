@@ -4,7 +4,7 @@
 
 Please log your feature requests as issues.
 
-This add-on is built using Node.js and Python 2.7 and has been tested on Ubuntu 14.04, Windows 10 and Mac OS X.
+This add-on is built using Node.js and Python 2.7 and has been tested on Ubuntu 14.04, Windows 10.
 
 It consumes Metrics, Diagnostic Logs and the Activity Log according to the techniques defined by Azure Monitor, which provides highly granular and real-time monitoring data for Azure resources, and passes those selected by the user's configuration along to Splunk. 
 

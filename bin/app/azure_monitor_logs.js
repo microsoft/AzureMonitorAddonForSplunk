@@ -325,51 +325,76 @@ var messageHandler = function (name, data, eventWriter) {
 
     Logger.debug(name, String.format('streamEvents.messageHandler got data for data input named: {0}', name));
 
-    // get identifiers from resource id
+    // get identifiers from resource id if it exists
+    // if it doesn't exist, this must be an AAD log - get the tenant id
     var resourceId = data.resourceId || '';
     var tenantId = data.tenantId || '';
-    if (resourceId.length > 0) {
-        resourceId = data.resourceId.toUpperCase() || '';
-    } else {
-        data.am_tenantId = tenantId;
-        data.category = "Azure AD Activity logs";
-    }
-    var subscriptionId = getElement(resourceId, 'SUBSCRIPTIONS\/(.*?)\/');
-    var resourceGroup = getElement(resourceId, 'SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
-    var resourceName = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
-    var resourceType = getElement(resourceId, 'PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
 
-    // add identifiers as standard properties to the event
-    if (subscriptionId.length > 0) {
-        data.am_subscriptionId = subscriptionId;
-    }
-    if (resourceGroup.length > 0) {
-        data.am_resourceGroup = resourceGroup;
-    }
-    if (resourceName.length > 0) {
-        data.am_resourceName = resourceName;
-    }
-    if (resourceType.length > 0) {
-        data.am_resourceType = resourceType;
+    if (resourceId.length > 0) {
+        // not AAD log. extract details from resourceId
+
+        resourceId = data.resourceId.toUpperCase() || '';
+
+        var subscriptionId = getElement(resourceId, 'SUBSCRIPTIONS\/(.*?)\/');
+        var resourceGroup = getElement(resourceId, 'SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
+        var resourceName = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
+        var resourceType = getElement(resourceId, 'PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
+    
+        // add identifiers as standard properties to the event
+        if (subscriptionId.length > 0) {
+            data.am_subscriptionId = subscriptionId;
+        }
+        if (resourceGroup.length > 0) {
+            data.am_resourceGroup = resourceGroup;
+        }
+        if (resourceName.length > 0) {
+            data.am_resourceName = resourceName;
+        }
+        if (resourceType.length > 0) {
+            data.am_resourceType = resourceType;
+        }
+    
+    } else {
+        // AAD log
+
+        data.am_tenantId = tenantId;
+
     }
 
     // get the sourcetype based on the message category and data input type
     var sourceType = '';
 
     if (~name.indexOf('azure_activity_log:')) {
+        // activity log
 
-        var operationNameRaw = data.operationName.toUpperCase() || '';
-        var operationName = '';
-        if (_.isString(operationNameRaw)) {
-            operationName = operationNameRaw;
-        } else if (_.isObject(operationNameRaw)) {
-            operationName = operationNameRaw.value.toUpperCase() || '';
+        if (tenantId.length > 0) {
+            // AAD Audit & Sign In logs
+
+            if (data.category === 'Audit') {
+                data.am_category = "Azure AD Activity logs (Audit)";
+                sourceType = "amal:aadal:audit";
+            } else {
+                data.am_category = "Azure AD Activity logs (Sign In)";
+                sourceType = "amal:aadal:signin";
+            }
+
         } else {
-            operationName = "MICROSOFT.BOGUS/THISISANERROR/ACTION";
-        }
-        sourceType = getAMALsourcetype(name, operationName);
+            // all other Activity Logs
+            
+            var operationNameRaw = data.operationName.toUpperCase() || '';
+            var operationName = '';
+            if (_.isString(operationNameRaw)) {
+                operationName = operationNameRaw;
+            } else if (_.isObject(operationNameRaw)) {
+                operationName = operationNameRaw.value.toUpperCase() || '';
+            } else {
+                operationName = "MICROSOFT.BOGUS/THISISANERROR/ACTION";
+            }
+            sourceType = getAMALsourcetype(name, operationName);
 
+        }
     } else {
+        // diagnostic logs
 
         sourceType = getAMDLsourcetype(data.category.toUpperCase() || '', resourceType);
 
