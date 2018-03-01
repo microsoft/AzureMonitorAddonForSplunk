@@ -326,7 +326,14 @@ var messageHandler = function (name, data, eventWriter) {
     Logger.debug(name, String.format('streamEvents.messageHandler got data for data input named: {0}', name));
 
     // get identifiers from resource id
-    var resourceId = data.resourceId.toUpperCase() || '';
+    var resourceId = data.resourceId || '';
+    var tenantId = data.tenantId || '';
+    if (resourceId.length > 0) {
+        resourceId = data.resourceId.toUpperCase() || '';
+    } else {
+        data.am_tenantId = tenantId;
+        data.category = "Azure AD Activity logs";
+    }
     var subscriptionId = getElement(resourceId, 'SUBSCRIPTIONS\/(.*?)\/');
     var resourceGroup = getElement(resourceId, 'SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
     var resourceName = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
@@ -478,6 +485,7 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
     var hubsToBeQueried = [];
     if (~name.indexOf('azure_activity_log:')) {
         hubsToBeQueried.push('insights-operational-logs');
+        hubsToBeQueried.push('insights-logs-audit');
     } else {
         var hubNames = Object.keys(allHubs);
         hubNames.forEach(function (hubName) {
