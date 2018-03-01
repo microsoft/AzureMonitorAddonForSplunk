@@ -329,6 +329,7 @@ var messageHandler = function (name, data, eventWriter) {
     // if it doesn't exist, this must be an AAD log - get the tenant id
     var resourceId = data.resourceId || '';
     var tenantId = data.tenantId || '';
+    var category = data.category || '';
 
     if (resourceId.length > 0) {
         // not AAD log. extract details from resourceId
@@ -370,7 +371,7 @@ var messageHandler = function (name, data, eventWriter) {
         if (tenantId.length > 0) {
             // AAD Audit & Sign In logs
 
-            if (data.category === 'Audit') {
+            if (category === 'Audit') {
                 data.am_category = "Azure AD Activity logs (Audit)";
                 sourceType = "amal:aadal:audit";
             } else {
@@ -396,7 +397,7 @@ var messageHandler = function (name, data, eventWriter) {
     } else {
         // diagnostic logs
 
-        sourceType = getAMDLsourcetype(data.category.toUpperCase() || '', resourceType);
+        sourceType = getAMDLsourcetype(category.toUpperCase() || '', resourceType);
 
     }
 
@@ -522,7 +523,25 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
     var amqpClients = {};
 
     var ehErrorHandler = function (hub, myIdx, rx_err) {
-        Logger.debug(name, String.format('==> RX ERROR on hub: {0}, err: {1}', hub, rx_err));
+
+        // sample rx_err:
+        //{
+        //    "name": "AmqpProtocolError",
+        //    "message": "amqp:not-found:The messaging entity 'sb://xxxx.servicebus.windows.net/insights-logs-auditevent/consumergroups/$default/partitions/0' could not be found. TrackingId:e256ee5832744807b36a22bb4f411b15_G18, SystemTracker:gateway2, Timestamp:3/1/2018 12:48:29 PM",
+        //    "condition": "amqp:not-found",
+        //    "description": "The messaging entity 'sb://xxxx.servicebus.windows.net/insights-logs-auditevent/consumergroups/$default/partitions/0' could not be found. TrackingId:e256ee5832744807b36a22bb4f411b15_G18, SystemTracker:gateway2, Timestamp:3/1/2018 12:48:29 PM",
+        //    "errorInfo": {}
+        //}
+
+        // see if it's trying to establish connection to 0'th partition of a hub
+        // if so, it's not really an error. The hub wasn't created because no messages are flowing to it as of yet.
+        if (rx_err.condition.indexOf('amqp:not-found') !== -1) {
+            if (rx_err.description.indexOf('partitions/') !== -1) {
+                Logger.debug(name, String.format('==> Did not find hub: {0}. Message: {1}', hub, rx_err.message));
+            }
+        } else {
+            Logger.debug(name, String.format('==> RX ERROR on hub: {0}, err: {1}', hub, rx_err));
+        }
 
         if (!_.isUndefined(amqpClients[hub])) {
             amqpClients[hub].client.disconnect();
