@@ -1,18 +1,20 @@
 ﻿# Variables used below
-$subscriptionId = "<YOUR SUBSCRIPTION ID>"
-$tenantId = "<YOUR AZURE AD TENANT ID>"
-$splunkResourceGroupName = "<RESOURCE GROUP NAME YOU DEPLOYED SPLUNK ENTERPRISE TO>"
-$splunkResourceGroupLocation = "<LOCATION / REGION YOU DEPLOYED SPLUNK ENTERPRISE TO>"
+$subscriptionId = "<Your Azure Subscription Id>"
+$tenantId = "<Your Azure AD Tenant Id>"
+$splunkResourceGroupName = "<Resource group name>"
+$splunkResourceGroupLocation = "<Resource group location>"
+# Note: The resource group name can be a new or existing resource group.
 
 #################################################################
 # Don't modify anything below unless you know what you're doing.
 #################################################################
+$ErrorActionPreference = "Stop"
+$WarningPreference = "SilentlyContinue"
+
 $azureSession = Login-AzureRmAccount -Subscription $subscriptionId -TenantId $tenantId
-$splunkResourceGroup = Get-AzureRmResourceGroup -Name $splunkResourceGroupName -Location $splunkResourceGroupLocation
+$splunkResourceGroup = New-AzureRmResourceGroup -Name $splunkResourceGroupName -Location $splunkResourceGroupLocation -Force
 $ticks = [DateTime]::UtcNow.Ticks
 
-# Security Setup - This can be executed while the Splunk Enterprise VM is being deployed.
-# Reference: https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Security
 
 # Create an Event Hub Namespace
 $eventHubNamespaceName = "spleh" + $ticks
@@ -30,7 +32,7 @@ $keyVault = New-AzureRmKeyVault -ResourceGroupName $splunkResourceGroup.Resource
 Write-Host "- Setting default access policy for '$($azureSession.Context.Account.Id)'" -ForegroundColor Yellow
 Set-AzureRmKeyVaultAccessPolicy -ResourceGroupName $keyVault.ResourceGroupName -VaultName $keyVault.VaultName `
     -EmailAddress $azureSession.Context.Account `
-    -PermissionsToSecrets get, list, set, delete, recover, backup, restore `
+    -PermissionsToSecrets get,list,set,delete,recover,backup,restore `
     -PermissionsToKey get,list,update,create,import,delete,recover,backup,restore
 
 
@@ -75,6 +77,19 @@ $eventHubCredentialsSecret = Set-AzureKeyVaultSecret -VaultName $keyVault.VaultN
 $restAPICredentialsSecret = Set-AzureKeyVaultSecret -VaultName $keyVault.VaultName -Name "myRESTAPICredentials" `
     -ContentType $azureADSP.ApplicationId -SecretValue $clientSecretSecured
 
+# Create a new log profile to export activity log to event hub
+Write-Host "Configuring Azure Monitor Activity Log to export to event hub '$eventHubNamespaceName'" -ForegroundColor Yellow
+$logProfileName = "default"
+$locations = (Get-AzureRmLocation).Location
+$locations += "global"
+$serviceBusRuleId = "/subscriptions/$subscriptionId/resourceGroups/$splunkResourceGroupName" + ` 
+                    "/providers/Microsoft.EventHub/namespaces/$eventHubNamespaceName" + `
+                    "/authorizationrules/RootManageSharedAccessKey"
+Remove-AzureRmLogProfile -Name $logProfileName -ErrorAction SilentlyContinue
+Add-AzureRmLogProfile -Name $logProfileName -Location $locations -ServiceBusRuleId $serviceBusRuleId 
+
+Write-Host "Azure configuration completed successfully!" -ForegroundColor Green
+
 # Configure Splunk
 # Settings needed to configure Splunk
 Write-Host ""
@@ -116,18 +131,6 @@ Write-Host "  SubscriptionId:    " $azureSession.Context.Subscription
 Write-Host "  vaultName:         " $keyVault.VaultName
 Write-Host "  secretName:        " $restAPICredentialsSecret.Name
 Write-Host "  secretVersion      " $restAPICredentialsSecret.Version
-
-
-# Configure Azure
-# This adds Azure Monitoring Metrics to the Splunk Enterprise VM
-# - Only used as a quick and easy way to see metric data once you have it configured in Splunk
-$splunkVM = Get-AzureRmVM -ResourceGroupName $splunkResourceGroupName -Name "standalone-vm"
-$splunkVM.Tags.Add("Metrics", "Percentage CPU, Network In, Network Out")
-Update-AzureRmVM -ResourceGroupName $splunkResourceGroupName -VM $splunkVM -Tags $splunkVM.Tags
-
-
-
- 
 
 
 
