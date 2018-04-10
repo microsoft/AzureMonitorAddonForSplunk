@@ -1,0 +1,26 @@
+{
+  "time": "2018-02-22T20:42:58.9184488Z",
+  "operationName": "Reset password (by admin)",
+  "operationVersion": "1.0",
+  "category": "Audit",
+  "tenantId": "bf85dc9d-cb43-44a4-80c4-469e8c58249e",
+  "resultType": "Success",
+  "resultSignature": "-1",
+  "resultDescription": "None",
+  "durationMs": "-1",
+  "callerIpAddress": "51.141.30.89",
+  "correlationId": "7b29c3e1-0285-41b1-aa14-0bb751c6101e",
+  "identity": "audrey.oliver@wingtiptoysonline.com",
+  "Level": "Informational",
+  "location": "NEU",
+  "properties": {
+    "identityType": "UPN",
+    "operationType": "Update",
+    "additionalDetails": "None",
+    "additionalTargets": "",
+    "targetUpdatedProperties": "",
+    "targetResourceType": "UPN__TenantContextID__PUID__ObjectID__ObjectClass",
+    "targetResourceName": "abby.miller@wingtiptoysonline.com__bf85dc9d-cb43-44a4-80c4-469e8c58249e__10037FFE906EB2A2__88ff4742-5844-4e4f-bba0-4b3b9fe68a22__User",
+    "auditEventCategory": "UserManagement"
+  }
+}

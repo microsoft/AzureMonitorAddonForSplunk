@@ -325,46 +325,79 @@ var messageHandler = function (name, data, eventWriter) {
 
     Logger.debug(name, String.format('streamEvents.messageHandler got data for data input named: {0}', name));
 
-    // get identifiers from resource id
-    var resourceId = data.resourceId.toUpperCase() || '';
-    var subscriptionId = getElement(resourceId, 'SUBSCRIPTIONS\/(.*?)\/');
-    var resourceGroup = getElement(resourceId, 'SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
-    var resourceName = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
-    var resourceType = getElement(resourceId, 'PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
+    // get identifiers from resource id if it exists
+    // if it doesn't exist, this must be an AAD log - get the tenant id
+    var resourceId = data.resourceId || '';
+    var tenantId = data.tenantId || '';
+    var category = data.category || '';
 
-    // add identifiers as standard properties to the event
-    if (subscriptionId.length > 0) {
-        data.am_subscriptionId = subscriptionId;
-    }
-    if (resourceGroup.length > 0) {
-        data.am_resourceGroup = resourceGroup;
-    }
-    if (resourceName.length > 0) {
-        data.am_resourceName = resourceName;
-    }
-    if (resourceType.length > 0) {
-        data.am_resourceType = resourceType;
+    if (resourceId.length > 0) {
+        // not AAD log. extract details from resourceId
+
+        resourceId = data.resourceId.toUpperCase() || '';
+
+        var subscriptionId = getElement(resourceId, 'SUBSCRIPTIONS\/(.*?)\/');
+        var resourceGroup = getElement(resourceId, 'SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
+        var resourceName = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
+        var resourceType = getElement(resourceId, 'PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
+    
+        // add identifiers as standard properties to the event
+        if (subscriptionId.length > 0) {
+            data.am_subscriptionId = subscriptionId;
+        }
+        if (resourceGroup.length > 0) {
+            data.am_resourceGroup = resourceGroup;
+        }
+        if (resourceName.length > 0) {
+            data.am_resourceName = resourceName;
+        }
+        if (resourceType.length > 0) {
+            data.am_resourceType = resourceType;
+        }
+    
+    } else {
+        // AAD log
+
+        data.am_tenantId = tenantId;
+
     }
 
     // get the sourcetype based on the message category and data input type
     var sourceType = '';
 
     if (~name.indexOf('azure_activity_log:')) {
+        // activity log
 
-        var operationNameRaw = data.operationName.toUpperCase() || '';
-        var operationName = '';
-        if (_.isString(operationNameRaw)) {
-            operationName = operationNameRaw;
-        } else if (_.isObject(operationNameRaw)) {
-            operationName = operationNameRaw.value.toUpperCase() || '';
+        if (tenantId.length > 0) {
+            // AAD Audit & Sign In logs
+
+            if (category === 'Audit') {
+                data.am_category = "Azure AD Activity logs (Audit)";
+                sourceType = "amal:aadal:audit";
+            } else {
+                data.am_category = "Azure AD Activity logs (Sign In)";
+                sourceType = "amal:aadal:signin";
+            }
+
         } else {
-            operationName = "MICROSOFT.BOGUS/THISISANERROR/ACTION";
+            // all other Activity Logs
+            
+            var operationNameRaw = data.operationName.toUpperCase() || '';
+            var operationName = '';
+            if (_.isString(operationNameRaw)) {
+                operationName = operationNameRaw;
+            } else if (_.isObject(operationNameRaw)) {
+                operationName = operationNameRaw.value.toUpperCase() || '';
+            } else {
+                operationName = "MICROSOFT.BOGUS/THISISANERROR/ACTION";
+            }
+            sourceType = getAMALsourcetype(name, operationName);
+
         }
-        sourceType = getAMALsourcetype(name, operationName);
-
     } else {
+        // diagnostic logs
 
-        sourceType = getAMDLsourcetype(data.category.toUpperCase() || '', resourceType);
+        sourceType = getAMDLsourcetype(category.toUpperCase() || '', resourceType);
 
     }
 
@@ -478,6 +511,7 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
     var hubsToBeQueried = [];
     if (~name.indexOf('azure_activity_log:')) {
         hubsToBeQueried.push('insights-operational-logs');
+        hubsToBeQueried.push('insights-logs-audit');
     } else {
         var hubNames = Object.keys(allHubs);
         hubNames.forEach(function (hubName) {
@@ -489,7 +523,25 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
     var amqpClients = {};
 
     var ehErrorHandler = function (hub, myIdx, rx_err) {
-        Logger.debug(name, String.format('==> RX ERROR on hub: {0}, err: {1}', hub, rx_err));
+
+        // sample rx_err:
+        //{
+        //    "name": "AmqpProtocolError",
+        //    "message": "amqp:not-found:The messaging entity 'sb://xxxx.servicebus.windows.net/insights-logs-auditevent/consumergroups/$default/partitions/0' could not be found. TrackingId:e256ee5832744807b36a22bb4f411b15_G18, SystemTracker:gateway2, Timestamp:3/1/2018 12:48:29 PM",
+        //    "condition": "amqp:not-found",
+        //    "description": "The messaging entity 'sb://xxxx.servicebus.windows.net/insights-logs-auditevent/consumergroups/$default/partitions/0' could not be found. TrackingId:e256ee5832744807b36a22bb4f411b15_G18, SystemTracker:gateway2, Timestamp:3/1/2018 12:48:29 PM",
+        //    "errorInfo": {}
+        //}
+
+        // see if it's trying to establish connection to 0'th partition of a hub
+        // if so, it's not really an error. The hub wasn't created because no messages are flowing to it as of yet.
+        if (rx_err.condition.indexOf('amqp:not-found') !== -1) {
+            if (rx_err.description.indexOf('partitions/') !== -1) {
+                Logger.debug(name, String.format('==> Did not find hub: {0}. Message: {1}', hub, rx_err.message));
+            }
+        } else {
+            Logger.debug(name, String.format('==> RX ERROR on hub: {0}, err: {1}', hub, rx_err));
+        }
 
         if (!_.isUndefined(amqpClients[hub])) {
             amqpClients[hub].client.disconnect();
