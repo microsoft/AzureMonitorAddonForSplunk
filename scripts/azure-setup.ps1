@@ -12,12 +12,13 @@ $ErrorActionPreference = "Stop"
 $WarningPreference = "SilentlyContinue"
 
 $azureSession = Login-AzureRmAccount -Subscription $subscriptionId -TenantId $tenantId
+Write-Host "Creating resource group '$splunkResourceGroupName' in region '$splunkResourceGroupLocation'." -ForegroundColor Yellow
 $splunkResourceGroup = New-AzureRmResourceGroup -Name $splunkResourceGroupName -Location $splunkResourceGroupLocation -Force
 $ticks = [DateTime]::UtcNow.Ticks
 
 # Create an Event Hub Namespace
 $eventHubNamespaceName = "spleh" + $ticks
-Write-Host "Creating event hub namespace '$eventHubNamespaceName'" -ForegroundColor Yellow
+Write-Host "Creating event hub namespace '$eventHubNamespaceName' in resource group '$splunkResourceGroupName'." -ForegroundColor Yellow
 $eventHubNamespace = New-AzureRmEventHubNamespace -ResourceGroupName $splunkResourceGroup.ResourceGroupName `
                         -Location $splunkResourceGroup.Location -Name $eventHubNamespaceName
 $eventHubRootKey = Get-AzureRmEventHubKey -ResourceGroupName $eventHubNamespace.ResourceGroup `
@@ -25,7 +26,7 @@ $eventHubRootKey = Get-AzureRmEventHubKey -ResourceGroupName $eventHubNamespace.
 
 # Create a Key Vault
 $keyVaultName = "splkv" + $ticks
-Write-Host "Creating Key Vault '$keyVaultName'" -ForegroundColor Yellow
+Write-Host "Creating Key Vault '$keyVaultName' in resource group '$splunkResourceGroupName'." -ForegroundColor Yellow
 $keyVault = New-AzureRmKeyVault -ResourceGroupName $splunkResourceGroup.ResourceGroupName `
                 -Location $splunkResourceGroup.Location -VaultName $keyVaultName
 Write-Host "- Setting default access policy for '$($azureSession.Context.Account.Id)'" -ForegroundColor Yellow
@@ -37,7 +38,7 @@ Set-AzureRmKeyVaultAccessPolicy -ResourceGroupName $keyVault.ResourceGroupName -
 # Create an Azure AD App registration
 $splunkAzureADAppName = "spladapp" + $ticks
 $splunkAzureADAppHomePage = "https://" + $splunkAzureADAppName
-Write-Host "Creating an Azure AD application registration '$splunkAzureADAppName'" -ForegroundColor Yellow
+Write-Host "Creating a new Azure AD application registration named '$splunkAzureADAppName'." -ForegroundColor Yellow
 $azureADApp = New-AzureRmADApplication -DisplayName $splunkAzureADAppName -HomePage $splunkAzureADAppHomePage `
                 -IdentifierUris $splunkAzureADAppHomePage
 
@@ -48,15 +49,15 @@ $rand.GetBytes($bytes)
 $clientSecret = [System.Convert]::ToBase64String($bytes)
 $clientSecretSecured = ConvertTo-SecureString -String $clientSecret -AsPlainText -Force
 $endDate = [System.DateTime]::Now.AddYears(1)
-Write-Host "- Adding a client secret / credential for the application" -ForegroundColor Yellow
+Write-Host "- Adding a client secret to Azure AD application '$($azureADApp.DisplayName)'." -ForegroundColor Yellow
 New-AzureRmADAppCredential -ApplicationId $azureADApp.ApplicationId -Password $clientSecretSecured -EndDate $endDate
 
 # Create an Azure AD Service Principal associated with the Azure AD App
-Write-Host "Creating service principal for Azure AD application '$($azureADApp.ApplicationId)'" -ForegroundColor Yellow
+Write-Host "Creating service principal for Azure AD application '$($azureADApp.DisplayName)'" -ForegroundColor Yellow
 $azureADSP = New-AzureRmADServicePrincipal -ApplicationId $azureADApp.ApplicationId
 
 # Assign the service principal to the Reader role for the Azure subscription
-Write-Host "Adding service principal '$($azureADSP.Id)' to the Reader role for the subscription." -ForegroundColor Yellow
+Write-Host "Adding service principal '$($azureADSP.DisplayName)' to the Reader role for the subscription." -ForegroundColor Yellow
 $count = 0
 do {
     # Allow some time for the service principal to propogate throughout Azure AD
@@ -66,11 +67,11 @@ do {
 } while (($roleAssignment -eq $null) -and ($count -le 5))
 
 if ($roleAssignment -eq $null) {
-    Write-Error "Unable to assign service principal '$($azureADSP.Id) to Reader role for the subscription.  Stopping script execution."
+    Write-Error "Unable to assign service principal '$($azureADSP.DisplayName) to Reader role for the subscription.  Stopping script execution."
 }
 
 # Give the service principal permissions to retrieve secrets from the key vault
-Write-Host "Assigning key vault 'read' permissions to secrets for service principal '$($azureADSP.Id)'" -ForegroundColor Yellow 
+Write-Host "Assigning key vault 'read' permissions to secrets for service principal '$($azureADSP.DisplayName)'" -ForegroundColor Yellow 
 Set-AzureRmKeyVaultAccessPolicy -ResourceGroupName $keyVault.ResourceGroupName -VaultName $keyVault.VaultName `
     -PermissionsToSecrets "get" -ObjectId $azureADSP.Id
 
@@ -97,12 +98,15 @@ Write-Host "Azure configuration completed successfully!" -ForegroundColor Green
 
 # Configure Splunk
 # Settings needed to configure Splunk
+$transcriptPath = "$PSScriptRoot\$splunkResourceGroupName" + ".azureconfig" 
+Start-Transcript -Path $transcriptPath -Append -Force
+
 Write-Host ""
 Write-Host "****************************"
 Write-Host "*** SPLUNK CONFIGURATION ***"
 Write-Host "****************************"
 Write-Host ""
-Write-Host "Data Input Settings for configuration as explained at https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Configuration-of-Splunk"
+Write-Host "Data Input Settings for configuration as explained at https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Configuration-of-Splunk."
 Write-Host ""
 Write-Host "  AZURE MONITOR ACTIVITY LOG"
 Write-Host "  ----------------------------"
@@ -136,6 +140,8 @@ Write-Host "  SubscriptionId:    " $azureSession.Context.Subscription
 Write-Host "  vaultName:         " $keyVault.VaultName
 Write-Host "  secretName:        " $restAPICredentialsSecret.Name
 Write-Host "  secretVersion      " $restAPICredentialsSecret.Version
+Write-Host ""
 
+Stop-Transcript
 
 
