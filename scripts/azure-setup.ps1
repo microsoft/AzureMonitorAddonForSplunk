@@ -15,7 +15,6 @@ $azureSession = Login-AzureRmAccount -Subscription $subscriptionId -TenantId $te
 $splunkResourceGroup = New-AzureRmResourceGroup -Name $splunkResourceGroupName -Location $splunkResourceGroupLocation -Force
 $ticks = [DateTime]::UtcNow.Ticks
 
-
 # Create an Event Hub Namespace
 $eventHubNamespaceName = "spleh" + $ticks
 Write-Host "Creating event hub namespace '$eventHubNamespaceName'" -ForegroundColor Yellow
@@ -34,7 +33,6 @@ Set-AzureRmKeyVaultAccessPolicy -ResourceGroupName $keyVault.ResourceGroupName -
     -EmailAddress $azureSession.Context.Account `
     -PermissionsToSecrets get,list,set,delete,recover,backup,restore `
     -PermissionsToKey get,list,update,create,import,delete,recover,backup,restore
-
 
 # Create an Azure AD App registration
 $splunkAzureADAppName = "spladapp" + $ticks
@@ -57,12 +55,19 @@ New-AzureRmADAppCredential -ApplicationId $azureADApp.ApplicationId -Password $c
 Write-Host "Creating service principal for Azure AD application '$($azureADApp.ApplicationId)'" -ForegroundColor Yellow
 $azureADSP = New-AzureRmADServicePrincipal -ApplicationId $azureADApp.ApplicationId
 
-# Need to pause after creaeting the service principal or you may get an error on the next call indicating the SP doesn't exist.
-Start-Sleep -Seconds 30
-
 # Assign the service principal to the Reader role for the Azure subscription
 Write-Host "Adding service principal '$($azureADSP.Id)' to the Reader role for the subscription." -ForegroundColor Yellow
-New-AzureRmRoleAssignment -RoleDefinitionName "Reader" -Scope "/subscriptions/$subscriptionId" -ObjectId $azureADSP.Id
+$count = 0
+do {
+    # Allow some time for the service principal to propogate throughout Azure AD
+    Start-Sleep ($count++ * 10)
+    $roleAssignment = New-AzureRmRoleAssignment -RoleDefinitionName "Reader" -Scope "/subscriptions/$subscriptionId" `
+                        -ObjectId $azureADSP.Id -ErrorAction SilentlyContinue
+} while (($roleAssignment -eq $null) -and ($count -le 5))
+
+if ($roleAssignment -eq $null) {
+    Write-Error "Unable to assign service principal '$($azureADSP.Id) to Reader role for the subscription.  Stopping script execution."
+}
 
 # Give the service principal permissions to retrieve secrets from the key vault
 Write-Host "Assigning key vault 'read' permissions to secrets for service principal '$($azureADSP.Id)'" -ForegroundColor Yellow 
