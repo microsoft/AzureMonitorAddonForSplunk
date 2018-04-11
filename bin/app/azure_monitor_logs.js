@@ -511,7 +511,6 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
     var hubsToBeQueried = [];
     if (~name.indexOf('azure_activity_log:')) {
         hubsToBeQueried.push('insights-operational-logs');
-        hubsToBeQueried.push('insights-logs-audit');
     } else {
         var hubNames = Object.keys(allHubs);
         hubNames.forEach(function (hubName) {
