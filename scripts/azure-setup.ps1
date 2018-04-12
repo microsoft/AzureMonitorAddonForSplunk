@@ -91,6 +91,7 @@ $locations += "global"
 $serviceBusRuleId = "/subscriptions/$subscriptionId/resourceGroups/$splunkResourceGroupName" + ` 
                     "/providers/Microsoft.EventHub/namespaces/$eventHubNamespaceName" + `
                     "/authorizationrules/RootManageSharedAccessKey"
+Register-AzureRmResourceProvider -ProviderNamespace Microsoft.Insights
 Remove-AzureRmLogProfile -Name $logProfileName -ErrorAction SilentlyContinue
 Add-AzureRmLogProfile -Name $logProfileName -Location $locations -ServiceBusRuleId $serviceBusRuleId 
 
