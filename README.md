@@ -36,14 +36,70 @@ See here: [Use portal to create Active Directory application and service princip
 
    The output for the script will look similar to the output shown here:
    ![sample script output](./images/script-output.png)
-3. Install Node.js and Python on your Splunk Enterprise instance as described [here](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Installation).
-4. Configure data inputs in Splunk as described [here](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Configuration-of-Splunk).
+3. Install the add-on in Splunk Enterprise using the latest package file in `.\packages\*.spl`.
+   * In Splunk, open the apps manager page by clicking on the gear icon.
+
+      ![Managing apps in Splunk](./images/manage-apps.png)
+
+   * Click on the button labeled **Install app from file**.
+
+   * In the dialog window, click the **Browse...** button and select the latest `*.spl` file in the `.\packages` folder.  Next, click the **Upload** button.
+
+      ![Upload add-on to Splunk](./images/upload-add-on-app.png)
+
+   * After uploading the add-on app, the apps manager page should show the application installed in Splunk.  An error message may also appear if the indicating the add-on could not initialize.  This is typically because dependencies for Python and/or Node.js are not present.
+
+      ![Initialize modular input error](./images/init-modular-input-01.png)
+
+   * To resolve the error message stating Splunk is "Unable to initialize modular input", install Node.js and Python on your Splunk Enterprise instance as described [here](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Installation).  An example for an instance running on Ubuntu is shown below:
+      * Run the following commands to install the Python and Node.js dependencies:
+
+         ```bash
+         # Elevate to root user
+         sudo -i
+
+         # Download script to setup Python dependencies
+         curl -O https://raw.githubusercontent.com/Microsoft/AzureMonitorAddonForSplunk/master/packages/am_depends_ubuntu.sh
+
+         # Set the execution attribute on the downloaded script
+         chmod +x ./am_depends_ubuntu.sh
+
+         # Run the script
+         ./am_depends_ubuntu.sh
+
+         # Download Node.js and it's dependencies
+         curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+
+         # Install Node.js
+         apt-get install nodejs
+
+         # Install Nodel modules in the add-on's app folder.
+         cd /opt/splunk/etc/apps/TA-Azure_Monitor/bin/app
+         npm install
+
+         # Return back to a non-root user
+         exit
+         ```
+
+      * Go back to Splunk and click the **Disable** link for the add-on.
+
+        ![Disable and Enable the add-on](./images/disable-add-on.png)
+
+      * Click the **Enable** link to re-enable the add-on.  The add-on should be enabled now without any error messages appearing.
+
+4. Using the output from the `azure-setup.ps1` script above, configure the add-on's data inputs.  Hint, the output from the script is saved to a text file in the same directory as the script and is named `<your resource group name>.azureconfig`.
+
+   * In Splunk, click on **Settings** -> **Data Inputs** at the top of the page.
+
+   * For each of the add-on's data inputs, add a new configuration by copying and pasting the settings from the script's output into the data input's configuration.
+
+      ![Azure Monitor Add-On Data Inputs](./images/data-inputs.png)
 
 # Support
 
-If you have encountered difficulties with the add-on, the first thing to do is ensure that all Python and Nodejs dependencies are installed correctly according to the installation instructions in the wiki.  
+If you have encountered difficulties with the add-on, the first thing to do is ensure that all Python and Nodejs dependencies are installed correctly according to the installation instructions in the wiki.
 
-If that doesn't help, the next thing to do is switch logging for ExecProcessor to Debug (Settings / Server Settings / Server Logging in Splunk Web) and recycle the add-on (disable/enable). Then search for 'azure_monitor' ERROR and DEBUG messages. There will be a lot of DEBUG messages. If you don't see anything helpful, open an issue in the repo.  
+If that doesn't help, the next thing to do is switch logging for ExecProcessor to Debug (Settings / Server Settings / Server Logging in Splunk Web) and recycle the add-on (disable/enable). Then search for 'azure_monitor' ERROR and DEBUG messages. There will be a lot of DEBUG messages. If you don't see anything helpful, open an issue in the repo.
 
 # Contributing
 
