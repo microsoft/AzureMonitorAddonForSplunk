@@ -104,3 +104,38 @@ If that doesn't help, the next thing to do is switch logging for ExecProcessor t
 # Contributing
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## Generating the Splunk package file
+It is assumed that contributors of this project will use Visual Studio Code to develop with.  You can download Visual Studio Code fro [here](https://code.visualstudio.com/Download).
+
+As a contributor, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_6.spl`.  To properly generate this file, you will need to install the following extension in your Visual Studio Code environment:
+
+![Visual Studio Code Deploy Extension](./images/vs-deploy-extension.png)
+
+The extension can be installed from the [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=mkloubert.vs-deploy).
+
+Follow the steps below to generate the version specific package file.
+
+1. Open `.\default\app.conf` and bump the **version** property in the **[launcher]** section.
+
+2. Open `.\deployment\package.cmd` and bump the **version** variable at the top of the file.
+
+3. In the Visual Studio Code Explorer, **right-click** on the **bin** folder and select **Deploy current file / folder** as shown below.  
+
+   ![Deploy bin folder](./images/deploy-bin-folder.png)
+
+   You will be prompted to select a target from the Visual Studio Code Command Palette, as shown below.  Select **saveAndPackage**.
+
+     ![Deployment Target](./images/deploy-target.png)
+
+   You will see a command window briefly appear.  The result of this step is the files and directories in the `.\bin` folder are copied to the folder `.\deployment\TA-Azure_Monitor\bin`.  This folder is a temporary holding place that the version specific package file will be generated from.
+   
+   This step will also result in the version specific package file, which will be in the `.\packages` folder, as shown below for version 1.2.6.
+
+   ![Version specific package file](./images/version-specific-package-file.png)
+
+4. Repeat the previous step for the following files and folders highlighted below.
+
+   ![Deployment artifacts](./images/deployment-artifacts.png)
+
+5. The version specific package file should be committed to the repository with your code changes.  It is tradition to remove the oldest version specific package file when creating a new one.
