@@ -36,6 +36,7 @@ See here: [Use portal to create Active Directory application and service princip
 
    The output for the script will look similar to the output shown here:
    ![sample script output](./images/script-output.png)
+<<<<<<< HEAD
 3. Install the add-on in Splunk Enterprise using the latest package file in `.\packages\*.spl`.
    * In Splunk, open the apps manager page by clicking on the gear icon.
 
@@ -94,6 +95,10 @@ See here: [Use portal to create Active Directory application and service princip
    * For each of the add-on's data inputs, add a new configuration by copying and pasting the settings from the script's output into the data input's configuration.
 
       ![Azure Monitor Add-On Data Inputs](./images/data-inputs.png)
+=======
+3. Install Node.js and Python on your Splunk Enterprise instance as described [here](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Installation).
+4. Configure data inputs in Splunk as described [here](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Configuration-of-Splunk).
+>>>>>>> 6f13d7f386152d9de9118bb8b9daebd6e7ddb100
 
 # Support
 
