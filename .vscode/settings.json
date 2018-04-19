@@ -58,6 +58,7 @@
             {
                 "type": "app",
                 "name": "package",
+                "submitFileList": false,
                 "app": "deployment/package.cmd"
             },
             {
