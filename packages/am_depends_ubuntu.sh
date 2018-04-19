@@ -4,6 +4,7 @@ apt-get update -q -y
 wget https://bootstrap.pypa.io/get-pip.py
 python get-pip.py
 apt-get -q -y install build-essential libssl-dev libffi-dev python-dev
+pip install Markdown -q
 pip install six -I -q 
 pip install PyJWT -q
 pip install cryptography -q

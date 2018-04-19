@@ -109,7 +109,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 ## Generating the Splunk package file
 It is assumed that contributors of this project will use Visual Studio Code to develop with.  You can download Visual Studio Code fro [here](https://code.visualstudio.com/Download).
 
-As a contributor, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_6.spl`.  To properly generate this file, you need to install the following extension in your Visual Studio Code environment:
+As a contributor, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_6.spl`.  To properly generate this file, you will need to install the following extension in your Visual Studio Code environment:
 
 ![Visual Studio Code Deploy Extension](./images/vs-deploy-extension.png)
 
@@ -139,4 +139,4 @@ Follow the steps below to generate the version specific package file.
 
    ![Deployment artifacts](./images/deployment-artifacts.png)
 
-5. The version specific package file should be committed to the repository with your code changes.  It is tradition to also remove the oldest version specific package file when creating a new one.
+5. The version specific package file should be committed to the repository with your code changes.  It is tradition to remove the oldest version specific package file when creating a new one.
