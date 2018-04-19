@@ -12,7 +12,8 @@ Here are a few resources if you want to learn more about Azure Monitor:<br/>
 * [Overview of Azure Monitor](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview)
 * [Overview of Azure Diagnostic Logs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-of-diagnostic-logs)
 * [Overview of the Azure Activity Log](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-activity-logs)
-* [Overview of Metrics in Microsoft Azure](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-metrics)  
+* [Overview of Metrics in Microsoft Azure](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-metrics)
+* [Stream Azure monitoring data to an event hub for consumption by an external tool](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitor-stream-monitoring-data-event-hubs)
 
 ## Installation and Configuration (manual)
 
@@ -36,7 +37,6 @@ See here: [Use portal to create Active Directory application and service princip
 
    The output for the script will look similar to the output shown here:
    ![sample script output](./images/script-output.png)
-<<<<<<< HEAD
 3. Install the add-on in Splunk Enterprise using the latest package file in `.\packages\*.spl`.
    * In Splunk, open the apps manager page by clicking on the gear icon.
 
@@ -95,10 +95,6 @@ See here: [Use portal to create Active Directory application and service princip
    * For each of the add-on's data inputs, add a new configuration by copying and pasting the settings from the script's output into the data input's configuration.
 
       ![Azure Monitor Add-On Data Inputs](./images/data-inputs.png)
-=======
-3. Install Node.js and Python on your Splunk Enterprise instance as described [here](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Installation).
-4. Configure data inputs in Splunk as described [here](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Configuration-of-Splunk).
->>>>>>> 6f13d7f386152d9de9118bb8b9daebd6e7ddb100
 
 # Support
 
@@ -113,7 +109,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 ## Generating the Splunk package file
 It is assumed that contributors of this project will use Visual Studio Code to develop with.  You can download Visual Studio Code fro [here](https://code.visualstudio.com/Download).
 
-As a contributor, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_6.spl`.  To properly generate this file, you will need to install the following extension in your Visual Studio Code environment:
+As a contributor, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_6.spl`.  To properly generate this file, you need to install the following extension in your Visual Studio Code environment:
 
 ![Visual Studio Code Deploy Extension](./images/vs-deploy-extension.png)
 
@@ -143,4 +139,4 @@ Follow the steps below to generate the version specific package file.
 
    ![Deployment artifacts](./images/deployment-artifacts.png)
 
-5. The version specific package file should be committed to the repository with your code changes.  It is tradition to remove the oldest version specific package file when creating a new one.
+5. The version specific package file should be committed to the repository with your code changes.  It is tradition to also remove the oldest version specific package file when creating a new one.
