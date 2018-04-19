@@ -59,7 +59,7 @@
                 "type": "app",
                 "name": "package",
                 "submitFileList": false,
-                "app": "C:/Users/golive/OneDrive - Microsoft/github/AzureMonitorAddonForSplunk/deployment/package.cmd"
+                "app": "deployment/package.cmd"
             },
             {
                 "type": "batch",
