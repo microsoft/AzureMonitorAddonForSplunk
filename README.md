@@ -42,6 +42,8 @@ This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal a
 2. Run the script.  The script will prompt you to authenticate to your Azure subscription.  The output for the script will look similar to the output shown here:
    ![sample script output](./images/script-output.png)
 
+   Proceed to the section [Splunk Enterprise configuration](#splunk-setup).  
+
 ### <a name="bash"></a>Azure configuration for Linux / Mac users ###
 
 1. Open a terminal window and navigate to the `.\scripts` folder.  The bash script requires four parameters as shown here:
@@ -57,7 +59,9 @@ This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal a
 2. Run the script.  The script will prompt you to authenticate to your Azure subscription.  The output for the script will look similar to the output shown here:
    ![sample script output](./images/bash-script-output.png)
 
-### Splunk Enterprise configuration ###
+   Proceed to the section [Splunk Enterprise configuration](#splunk-setup).  
+
+### <a name="splunk-setup"></a>Splunk Enterprise configuration ###
 
 1. Install the add-on in Splunk Enterprise using the latest package file in `.\packages\*.spl`.
    * In Splunk, open the apps manager page by clicking on the gear icon.
