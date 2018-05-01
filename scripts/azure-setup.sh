@@ -65,8 +65,7 @@ echo "Creating resource group '${RESOURCE_GROUP_NAME}' in region '${LOCATION}'."
 az group create \
     --name $RESOURCE_GROUP_NAME \
     --location $LOCATION \
-    --query properties.provisioningState \
-    --output jsonc
+    --query null
 
 TICKS=$(date +%s)
 
@@ -76,8 +75,9 @@ echo "Creating event hub namespace '${EVENTHUB_NAMESPACE_NAME}' in resource grou
 az eventhubs namespace create \
     --name $EVENTHUB_NAMESPACE_NAME \
     --resource-group $RESOURCE_GROUP_NAME \
-    --query provisioningState \
-    --output jsonc
+    --query null
+
+echo "Retrieving event hub primary key."    
 EVENTHUB_ROOT_KEY=$(az eventhubs namespace authorization-rule keys list \
     --resource-group $RESOURCE_GROUP_NAME \
     --namespace-name $EVENTHUB_NAMESPACE_NAME \
@@ -90,8 +90,7 @@ echo "Creating key vault '${KEYVAULT_NAME}' in resource group '${RESOURCE_GROUP_
 az keyvault create \
     --name $KEYVAULT_NAME \
     --resource-group $RESOURCE_GROUP_NAME \
-    --query properties.additionalProperties.provisioningState \
-    --output jsonc
+    --query null
 
 # Give the interactive user (ie: Administrator) full permissions to the key vault.
 echo "Giving interactive user '${AZURE_USER}' full permissions to key vault '${KEYVAULT_NAME}'."
@@ -101,8 +100,7 @@ az keyvault set-policy \
     --upn $AZURE_USER \
     --secret-permissions get list set delete recover backup restore \
     --key-permissions get list update create import delete recover backup restore \
-    --query properties.additionalProperties.provisioningState \
-    --output jsonc
+    --query null
 
 # Create a service principal and assign it to the Reader role for the subscription.
 SERVICE_PRINCIPAL_NAME="https://adap${TICKS}"
@@ -124,8 +122,7 @@ az keyvault set-policy \
     --resource-group $RESOURCE_GROUP_NAME \
     --spn $SERVICE_PRINCIPAL_NAME \
     --secret-permissions get \
-    --query properties.additionalProperties.provisioningState \
-    --output jsonc
+    --query null
 
 # Add secrets to keyvault for event hub and REST API credentials
 echo "Adding secrets to key vault '${KEYVAULT_NAME}'."
@@ -148,6 +145,26 @@ REST_API_SECRET_VERSION=$(az keyvault secret set \
 REST_API_SECRET_VERSION=${REST_API_SECRET_VERSION//[\"]/}
 REST_API_SECRET_VERSION=(${REST_API_SECRET_VERSION//// })
 REST_API_SECRET_VERSION=${REST_API_SECRET_VERSION[-1]}
+
+# Create a new log profile to export activity log to event hub
+echo "Configuring Azure Monitor Activity Log to export to event hub '$EVENTHUB_NAMESPACE_NAME'."
+LOCATIONS=$(az account list-locations --query "[*].name | join(',', @)")
+LOCATIONS=${LOCATIONS//[\"]/}
+LOCATIONS=${LOCATIONS//,/ }
+LOCATIONS="${LOCATIONS} global"
+LOG_PROFILE_NAME="default"
+LOG_PROFILE_CATEGORIES="Delete Write Action"
+SERVICE_BUS_RULE_ID="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP_NAME/providers/Microsoft.EventHub/namespaces/$EVENTHUB_NAMESPACE_NAME/authorizationrules/RootManageSharedAccessKey"
+az monitor log-profiles delete --name $LOG_PROFILE_NAME
+az monitor log-profiles create \
+    --name $LOG_PROFILE_NAME \
+    --location null \
+    --locations $LOCATIONS \
+    --categories $LOG_PROFILE_CATEGORIES \
+    --enabled false \
+    --days 0 \
+    --service-bus-rule-id $SERVICE_BUS_RULE_ID \
+    --query null
 
 # Show output for Splunk configuration.
 echo ""
@@ -185,7 +202,7 @@ echo "SPNApplicationID:  $SPN_APP_ID"
 echo "SPNApplicationKey: $CLIENT_SECRET"
 echo "SubscriptionId:    $SUBSCRIPTION_ID"
 echo "vaultName:         $KEYVAULT_NAME"
-echo "secretName:        $REST_API_SECRET_NAME_SECRET_NAME"
+echo "secretName:        $REST_API_SECRET_NAME"
 echo "secretVersion:     $REST_API_SECRET_VERSION"
 echo ""
 echo "Finished Successfully!"
