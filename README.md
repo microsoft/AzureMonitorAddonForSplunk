@@ -24,6 +24,13 @@ See here: [Use portal to create Active Directory application and service princip
 
 ## Installation and Configuration ("mostly" automated)
 
+This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal and other configurations to properly integrate Splunk with Azure.  Creating and configuring the Azure resources can be accomplished using one of the scripts available in the `.\scripts` folder as shown here:
+
+* Windows users can use the PowerShell script `.\scripts\azure-setup.ps1`.  Proceed to the section [Azure configuration for Windows users](#powershell).  
+* Linux and Mac users can use the Bash script `.\scripts\azure-setup.sh`. Proceed to the section [Azure configuration for Linux / Mac users](#bash).  
+
+### <a name="powershell"></a>Azure configuration for Windows users ###
+
 1. Open `.\scripts\azure-setup.ps1`.  Replace the variables at the top of the script with values from your environment.
    * `$subscriptionId` : Your Azure subscription Id.
    * `$tenantId` : The tenant / directory Id for your Azure subscription.
@@ -32,12 +39,27 @@ See here: [Use portal to create Active Directory application and service princip
 
    An example showing the variables populated is shown here:
    ![sample script output](./images/script-variables.png)
-2. Run the script.
-   * Note: The script will prompt you to authenticate to your Azure subscription.
-
-   The output for the script will look similar to the output shown here:
+2. Run the script.  The script will prompt you to authenticate to your Azure subscription.  The output for the script will look similar to the output shown here:
    ![sample script output](./images/script-output.png)
-3. Install the add-on in Splunk Enterprise using the latest package file in `.\packages\*.spl`.
+
+### <a name="bash"></a>Azure configuration for Linux / Mac users ###
+
+1. Open a terminal window and navigate to the `.\scripts` folder.  The bash script requires four parameters as shown here:
+
+   ``` bash
+   usage:  azure-setup.sh [options]
+   options:
+     -l <location>            : [Required] Location to provision resources in. Ex. westus, eastus, etc.
+     -r <resource group name> : [Required] Resource group to deploy resources into.
+     -s <subscription id>     : [Required] Azure subscription Id.
+     -t <tenant id>           : [Required] Azure Active Directory / Tenant Id.
+   ```  
+2. Run the script.  The script will prompt you to authenticate to your Azure subscription.  The output for the script will look similar to the output shown here:
+   ![sample script output](./images/bash-script-output.png)
+
+### Splunk Enterprise configuration ###
+
+1. Install the add-on in Splunk Enterprise using the latest package file in `.\packages\*.spl`.
    * In Splunk, open the apps manager page by clicking on the gear icon.
 
       ![Managing apps in Splunk](./images/manage-apps.png)
@@ -88,7 +110,7 @@ See here: [Use portal to create Active Directory application and service princip
 
       * Click the **Enable** link to re-enable the add-on.  The add-on should be enabled now without any error messages appearing.
 
-4. Using the output from the `azure-setup.ps1` script above, configure the add-on's data inputs.  Hint, the output from the script is saved to a text file in the same directory as the script and is named `<your resource group name>.azureconfig`.
+2. Using the output from either the `.\scripts\azure-setup.ps1` or `.\scripts\azure-setup.sh` above, configure the add-on's data inputs.
 
    * In Splunk, click on **Settings** -> **Data Inputs** at the top of the page.
 
