@@ -11,8 +11,7 @@ showErrorAndUsage() {
   fi
 
   echo "usage:  $(basename ${0}) [options]"
-  echo "options:"date +%s | sha256sum | base64 | head -c 32 ; echo
-
+  echo "options:"
   echo "  -l <location>            : [Required] Location to provision resources in. Ex. westus, eastus, etc."
   echo "  -r <resource group name> : [Required] Resource group to deploy resources into."
   echo "  -s <subscription id>     : [Required] Azure subscription Id."
@@ -136,7 +135,9 @@ EVENTHUB_SECRET_VERSION=$(az keyvault secret set \
     --name $EVENTHUB_SECRET_NAME \
     --value $EVENTHUB_ROOT_KEY \
     --query id)
+EVENTHUB_SECRET_VERSION=${EVENTHUB_SECRET_VERSION//[\"]/}
 EVENTHUB_SECRET_VERSION=(${EVENTHUB_SECRET_VERSION//// })
+EVENTHUB_SECRET_VERSION=${EVENTHUB_SECRET_VERSION[-1]}
 
 REST_API_SECRET_NAME="AzureMonitorMetric-secret"
 REST_API_SECRET_VERSION=$(az keyvault secret set \
@@ -144,7 +145,9 @@ REST_API_SECRET_VERSION=$(az keyvault secret set \
     --name $REST_API_SECRET_NAME \
     --value $CLIENT_SECRET \
     --query id)
+REST_API_SECRET_VERSION=${REST_API_SECRET_VERSION//[\"]/}
 REST_API_SECRET_VERSION=(${REST_API_SECRET_VERSION//// })
+REST_API_SECRET_VERSION=${REST_API_SECRET_VERSION[-1]}
 
 # Show output for Splunk configuration.
 echo ""
