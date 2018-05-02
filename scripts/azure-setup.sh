@@ -83,6 +83,7 @@ EVENTHUB_ROOT_KEY=$(az eventhubs namespace authorization-rule keys list \
     --namespace-name $EVENTHUB_NAMESPACE_NAME \
     --name RootManageSharedAccessKey \
     --query primaryKey)
+EVENTHUB_ROOT_KEY=${EVENTHUB_ROOT_KEY//[\"]/}
 
 # Create a key vault.
 KEYVAULT_NAME="kv${TICKS}"
@@ -103,24 +104,23 @@ az keyvault set-policy \
     --query null
 
 # Create a service principal and assign it to the Reader role for the subscription.
-SERVICE_PRINCIPAL_NAME="https://adap${TICKS}"
+SERVICE_PRINCIPAL_NAME="adap${TICKS}"
+CLIENT_SECRET=$(openssl rand -base64 32)
 echo "Creating service principal '${SERVICE_PRINCIPAL_NAME}' in Azure AD tenant '${TENANT_ID}'."
-RESULT=$(az ad sp create-for-rbac \
+SPN_APP_ID=$(az ad sp create-for-rbac \
     --name $SERVICE_PRINCIPAL_NAME \
+    --password $CLIENT_SECRET \
     --role Reader \
     --scopes /subscriptions/$SUBSCRIPTION_ID \
-    --query "[appId, password] | join(',', @)")
-RESULT=${RESULT//[\"]/}
-RESULTS=(${RESULT//,/ })
-SPN_APP_ID=${RESULTS[0]}
-CLIENT_SECRET=${RESULTS[1]}
+    --query appId)
+SPN_APP_ID=${SPN_APP_ID//[\"]/}
 
 # Give the service principal permissions to read secrets from the key vault.
 echo "Assigning 'read' permissions to key vault secrets for service principal '${SERVICE_PRINCIPAL_NAME}'."
 az keyvault set-policy \
     --name $KEYVAULT_NAME \
     --resource-group $RESOURCE_GROUP_NAME \
-    --spn $SERVICE_PRINCIPAL_NAME \
+    --spn $SPN_APP_ID \
     --secret-permissions get \
     --query null
 
@@ -130,6 +130,7 @@ EVENTHUB_SECRET_NAME="$EVENTHUB_NAMESPACE_NAME-secret"
 EVENTHUB_SECRET_VERSION=$(az keyvault secret set \
     --vault-name $KEYVAULT_NAME \
     --name $EVENTHUB_SECRET_NAME \
+    --description RootManageSharedAccessKey \
     --value $EVENTHUB_ROOT_KEY \
     --query id)
 EVENTHUB_SECRET_VERSION=${EVENTHUB_SECRET_VERSION//[\"]/}
@@ -140,6 +141,7 @@ REST_API_SECRET_NAME="AzureMonitorMetric-secret"
 REST_API_SECRET_VERSION=$(az keyvault secret set \
     --vault-name $KEYVAULT_NAME \
     --name $REST_API_SECRET_NAME \
+    --description $SPN_APP_ID \
     --value $CLIENT_SECRET \
     --query id)
 REST_API_SECRET_VERSION=${REST_API_SECRET_VERSION//[\"]/}
