@@ -126,6 +126,10 @@ This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal a
 
 If you have encountered difficulties with the add-on, the first thing to do is ensure that all Python and Nodejs dependencies are installed correctly according to the installation instructions in the wiki.
 
+The Activity Log and Diagnostic Log data inputs use AMQP to connect to event hub over TLS using ports 5671 / 5672 as described in the [AMQP 1.0 Service Bus and Event Hubs protocol guide](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide).  So, if you are having connection/authentication issues, check that these ports are open on your Splunk instance.
+
+The Azure Monitor Metrics data input uses HTTPS to call into the Azure Monitor Metric API.  As such, outbound traffic over port 443 needs to be enabled on the server.
+
 If that doesn't help, the next thing to do is switch logging for ExecProcessor to Debug (Settings / Server Settings / Server Logging in Splunk Web) and recycle the add-on (disable/enable). Then search for 'azure_monitor' ERROR and DEBUG messages. There will be a lot of DEBUG messages. If you don't see anything helpful, open an issue in the repo.
 
 # Contributing
