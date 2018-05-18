@@ -13,6 +13,7 @@
     "insights-logs-joblogs": "resourceId",
     "insights-logs-jobstreams": "resourceId",
     "insights-logs-audit": "resourceId",
+    "insights-logs-signin": "resourceId",
     "insights-logs-requests": "resourceId",
     "insights-logs-requestlogs": "resourceId",
     "insights-logs-operationallogs": "resourceId",
