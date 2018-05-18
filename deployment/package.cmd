@@ -9,6 +9,8 @@ REM Clean up any existing packages for this version.
 del %temp%\%version_folder%.spl
 del ..\packages\%version_folder%.spl
 
+REM Create folder structure and file contents to put in package.
+rmdir %ta_folder% /S /Q
 mkdir %ta_folder% 
 xcopy ..\bin\* %ta_folder%\bin\ /S
 xcopy ..\default\* %ta_folder%\default\ /S
