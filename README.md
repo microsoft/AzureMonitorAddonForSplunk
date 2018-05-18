@@ -15,19 +15,12 @@ Here are a few resources if you want to learn more about Azure Monitor:<br/>
 * [Overview of Metrics in Microsoft Azure](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-overview-metrics)
 * [Stream Azure monitoring data to an event hub for consumption by an external tool](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitor-stream-monitoring-data-event-hubs)
 
-## Installation and Configuration (manual)
-
-See the [Wiki](https://github.com/Microsoft/AzureMonitorAddonForSplunk/wiki/Azure-Monitor-Addon-For-Splunk) for detailed installation and configuration instructions. Release Notes (aka changelog) is also available in the wiki.
-
-### What's an Azure AD Service Principal and where can I get one?
-See here: [Use portal to create Active Directory application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal)<br/>
-
-## Installation and Configuration ("mostly" automated)
+## Installation and Configuration
 
 This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal and other configurations to properly integrate Splunk with Azure.  Creating and configuring the Azure resources can be accomplished using one of the scripts available in the `.\scripts` folder as shown here:
 
 * Windows users can use the PowerShell script `.\scripts\azure-setup.ps1`.  Proceed to the section [Azure configuration for Windows users](#powershell).  
-* Linux and Mac users can use the Bash script `.\scripts\azure-setup.sh`. Proceed to the section [Azure configuration for Linux / Mac users](#bash).  
+* Linux and Mac users can use the Bash script `.\scripts\azure-setup.sh`. Proceed to the section [Azure configuration for Linux / Mac users](#bash).
 
 ### <a name="powershell"></a>Azure configuration for Windows users ###
 
@@ -42,7 +35,7 @@ This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal a
 2. Run the script.  The script will prompt you to authenticate to your Azure subscription.  The output for the script will look similar to the output shown here:
    ![sample script output](./images/script-output.png)
 
-   Proceed to the section [Splunk Enterprise configuration](#splunk-setup).  
+   Proceed to the section [Splunk Enterprise configuration](#splunk-setup).
 
 ### <a name="bash"></a>Azure configuration for Linux / Mac users ###
 
@@ -55,11 +48,12 @@ This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal a
      -r <resource group name> : [Required] Resource group to deploy resources into.
      -s <subscription id>     : [Required] Azure subscription Id.
      -t <tenant id>           : [Required] Azure Active Directory / Tenant Id.
-   ```  
+   ```
+
 2. Run the script.  The script will prompt you to authenticate to your Azure subscription.  The output for the script will look similar to the output shown here:
    ![sample script output](./images/bash-script-output.png)
 
-   Proceed to the section [Splunk Enterprise configuration](#splunk-setup).  
+   Proceed to the section [Splunk Enterprise configuration](#splunk-setup).
 
 ### <a name="splunk-setup"></a>Splunk Enterprise configuration ###
 
@@ -137,36 +131,27 @@ If that doesn't help, the next thing to do is switch logging for ExecProcessor t
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 ## Generating the Splunk package file
-It is assumed that contributors of this project will use Visual Studio Code to develop with.  You can download Visual Studio Code fro [here](https://code.visualstudio.com/Download).
 
-As a contributor, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_6.spl`.  To properly generate this file, you will need to install the following extension in your Visual Studio Code environment:
+As a contributor, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_7.spl`.  Follow the steps below to generate the version specific package file.
 
-![Visual Studio Code Deploy Extension](./images/vs-deploy-extension.png)
-
-The extension can be installed from the [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=mkloubert.vs-deploy).
-
-Follow the steps below to generate the version specific package file.
+Note: The scripts use [7-Zip](https://www.7-zip.org/) to build the the file structure and contents.  So, make sure you have this installed on your computer and that `7z` can be run from a command/shell prompt. 
 
 1. Open `.\default\app.conf` and bump the **version** property in the **[launcher]** section.
 
-2. Open `.\deployment\package.cmd` and bump the **version** variable at the top of the file.
+2. This step generates the version specific package file.  If you are running Windows, then you will use the `.\deployment\package.cmd` script.  If you are running Mac or Linux, use the `.\deployment\package.sh` script.  Open a command/shell prompt and change to the `.\deployment` directory.  Execute the script, passing in the version specific string as shown below.  Notice the use of underscores in the string.
 
-3. In the Visual Studio Code Explorer, **right-click** on the **bin** folder and select **Deploy current file / folder** as shown below.  
+   **Windows**
+   ```
+   package.cmd 1_2_7
+   ```
 
-   ![Deploy bin folder](./images/deploy-bin-folder.png)
+   **Mac or Linux**
+   ```
+   ./package.sh 1_2_7
+   ```
 
-   You will be prompted to select a target from the Visual Studio Code Command Palette, as shown below.  Select **saveAndPackage**.
-
-     ![Deployment Target](./images/deploy-target.png)
-
-   You will see a command window briefly appear.  The result of this step is the files and directories in the `.\bin` folder are copied to the folder `.\deployment\TA-Azure_Monitor\bin`.  This folder is a temporary holding place that the version specific package file will be generated from.
-   
-   This step will also result in the version specific package file, which will be in the `.\packages` folder, as shown below for version 1.2.6.
+   The version specific package file will be in the `.\packages` folder, as shown below.
 
    ![Version specific package file](./images/version-specific-package-file.png)
 
-4. Repeat the previous step for the following files and folders highlighted below.
-
-   ![Deployment artifacts](./images/deployment-artifacts.png)
-
-5. The version specific package file should be committed to the repository with your code changes.  It is tradition to remove the oldest version specific package file when creating a new one.
+3. The version specific package file should be committed to the repository with your code changes.  It is tradition to remove the oldest version specific package file when creating a new one.
