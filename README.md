@@ -134,6 +134,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 As a contributor, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_7.spl`.  Follow the steps below to generate the version specific package file.
 
+Note: The scripts use [7-Zip](https://www.7-zip.org/) to build the the file structure and contents.  So, make sure you have this installed on your computer and that `7z` can be run from a command/shell prompt. 
+
 1. Open `.\default\app.conf` and bump the **version** property in the **[launcher]** section.
 
 2. This step generates the version specific package file.  If you are running Windows, then you will use the `.\deployment\package.cmd` script.  If you are running Mac or Linux, use the `.\deployment\package.sh` script.  Open a command/shell prompt and change to the `.\deployment` directory.  Execute the script, passing in the version specific string as shown below.  Notice the use of underscores in the string.
