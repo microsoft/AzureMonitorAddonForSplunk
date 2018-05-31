@@ -330,6 +330,7 @@ var messageHandler = function (name, data, eventWriter) {
     var resourceId = data.resourceId || '';
     var tenantId = data.tenantId || '';
     var category = data.category || '';
+    var sourceType = '';
 
     if (resourceId.length > 0) {
         // not AAD log. extract details from resourceId
@@ -357,31 +358,26 @@ var messageHandler = function (name, data, eventWriter) {
     
     } else {
         // AAD log
-
         data.am_tenantId = tenantId;
-
-    }
-
-    // get the sourcetype based on the message category and data input type
-    var sourceType = '';
-
-    if (~name.indexOf('azure_activity_log:')) {
-        // activity log
 
         if (tenantId.length > 0) {
             // AAD Audit & Sign In logs
 
             if (category === 'Audit') {
-                data.am_category = "Azure AD Activity logs (Audit)";
-                sourceType = "amal:aadal:audit";
+                data.am_category = "Azure AD logs (Audit)";
+                sourceType = "amdl:aadal:audit";
             } else {
-                data.am_category = "Azure AD Activity logs (Sign In)";
-                sourceType = "amal:aadal:signin";
+                data.am_category = "Azure AD logs (Sign In)";
+                sourceType = "amdl:aadal:signin";
             }
+        }
+    }
 
-        } else {
-            // all other Activity Logs
-            
+    if (~name.indexOf('azure_activity_log:')) {
+        // activity log
+
+        if (tenantId.length <= 0) {
+            // Not an Azure ADD Audit or SignIn log
             var operationNameRaw = data.operationName.toUpperCase() || '';
             var operationName = '';
             if (_.isString(operationNameRaw)) {
@@ -392,13 +388,10 @@ var messageHandler = function (name, data, eventWriter) {
                 operationName = "MICROSOFT.BOGUS/THISISANERROR/ACTION";
             }
             sourceType = getAMALsourcetype(name, operationName);
-
         }
-    } else {
+    } else if (sourceType == '') {
         // diagnostic logs
-
         sourceType = getAMDLsourcetype(category.toUpperCase() || '', resourceType);
-
     }
 
     Logger.debug(name, String.format('Event identifiers are: Subscription ID: {0}, resourceType: {1}, resourceName: {2}, sourceType: {3}',
