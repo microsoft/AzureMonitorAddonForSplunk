@@ -138,7 +138,7 @@ def get_secret_from_keyvault(ew, bearer_token, vault_name, secret_name, secret_v
 
     response_content = response.content
     content = json.loads(response_content)
-    creds = {'spn_client_id': content['contentType'],
+    creds = {#'spn_client_id': content['contentType'],
              'spn_client_secret': content['value']}
 
     return creds
