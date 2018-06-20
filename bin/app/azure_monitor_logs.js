@@ -539,7 +539,7 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
                 Logger.debug(name, String.format('==> Did not find hub: {0}. Message: {1}', hub, rx_err.message));
             }
         } else {
-            Logger.debug(name, String.format('==> RX ERROR on hub: {0}, err: {1}', hub, rx_err));
+            Logger.error(name, String.format('==> RX ERROR on hub: {0}, err: {1}', hub, rx_err));
         }
 
         if (!_.isUndefined(amqpClients[hub])) {
