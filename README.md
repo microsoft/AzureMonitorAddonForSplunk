@@ -1,8 +1,14 @@
 # Azure Monitor Add-on for Splunk
 
-## NOTE
+## NOTES
 
 Please log your feature requests as issues.
+
+If you prefer to stream your Azure Monitor telemetry to Splunk's HEC port, please check out this alternative to installing an add-on on your Splunk box:  
+
+[Azure Function for Splunk](https://github.com/Microsoft/AzureFunctionforSplunkVS)
+
+## Overview  
 
 This add-on is built using Node.js and Python 2.7 and has been tested on Ubuntu 14.04, Windows 10 and RHEL 7.
 
