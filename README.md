@@ -30,6 +30,18 @@ This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal a
 
 ### <a name="powershell"></a>Azure configuration for Windows users ###
 
+#### Requirements ####
+
+* Azure PowerShell, which you can download from [here](https://www.microsoft.com/web/handlers/webpi.ashx/getinstaller/WindowsAzurePowershellGet.3f.3f.3fnew.appids).  The script was tested with version 5.7.0 of the Azure PowerShell cmdlets running on Windows Server 2016.
+* The following resource providers must be registered in your Azure subscription.  You can find out which resouce providers are registered in your subscription using the command `Get-AzureRmResourceProvider | Where-Object { $_.RegistrationState -eq "Registered" } | Select ProviderNamespace`.
+  * Microsoft.Authorization
+  * Microsoft.EventHub
+  * Microsoft.KeyVault
+  * Microsoft.Storage
+  * microsoft.insights
+
+#### Configuration Steps ####
+
 1. Open `.\scripts\azure-setup.ps1`.  Replace the variables at the top of the script with values from your environment.
    * `$subscriptionId` : Your Azure subscription Id.
    * `$tenantId` : The tenant / directory Id for your Azure subscription.
@@ -44,6 +56,18 @@ This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal a
    Proceed to the section [Splunk Enterprise configuration](#splunk-setup).
 
 ### <a name="bash"></a>Azure configuration for Linux / Mac users ###
+
+#### Requirements ####
+
+* Azure command-line interface (CLI), which you can download from [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).  The script was tested with version 2.0.42 of the Azure CLI running on Ubuntu 18.04 LTS.
+* The following resource providers must be registered in your Azure subscription.  You can find out which resouce providers are registered in your subscription using the command ``az provider list --query '[?registrationState==`Registered`].namespace'``.
+  * Microsoft.Authorization
+  * Microsoft.EventHub
+  * Microsoft.KeyVault
+  * Microsoft.Storage
+  * microsoft.insights
+
+#### Configuration Steps ####
 
 1. Open a terminal window and navigate to the `.\scripts` folder.  The bash script requires four parameters as shown here:
 
