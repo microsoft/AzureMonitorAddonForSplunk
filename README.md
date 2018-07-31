@@ -25,6 +25,11 @@ Here are a few resources if you want to learn more about Azure Monitor:<br/>
 
 This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal and other configurations to properly integrate Splunk with Azure.  Creating and configuring the Azure resources can be accomplished using one of the scripts available in the `.\scripts` folder as shown here:
 
+### MSI authentication
+
+If you are planning to use MSI authentication instead of Service Principal (SPN), first ensure that you VM is up and running within your Azure subscription.
+
+
 * Windows users can use the PowerShell script `.\scripts\azure-setup.ps1`.  Proceed to the section [Azure configuration for Windows users](#powershell).  
 * Linux and Mac users can use the Bash script `.\scripts\azure-setup.sh`. Proceed to the section [Azure configuration for Linux / Mac users](#bash).
 
@@ -54,6 +59,7 @@ This add-on requires an Azure Event Hub, Key Vault, Azure AD Service Principal a
      -r <resource group name> : [Required] Resource group to deploy resources into.
      -s <subscription id>     : [Required] Azure subscription Id.
      -t <tenant id>           : [Required] Azure Active Directory / Tenant Id.
+     -m <vm name>             : [Optional] VM name of VM that has MSI enabled. This will skip SPN setup and assign RBAC access for the VM.
    ```
 
 2. Run the script.  The script will prompt you to authenticate to your Azure subscription.  The output for the script will look similar to the output shown here:

@@ -44,20 +44,20 @@ class AzureMonitorMetrics(Script):
 
         arg2 = Argument("SPNTenantID")
         arg2.data_type = Argument.data_type_string
-        arg2.required_on_create = True
-        arg2.required_on_edit = True
+        arg2.required_on_create = False
+        arg2.required_on_edit = False
         scheme.add_argument(arg2)
 
         arg3 = Argument("SPNApplicationId")
         arg3.data_type = Argument.data_type_string
-        arg3.required_on_create = True
-        arg3.required_on_edit = True
+        arg3.required_on_create = False
+        arg3.required_on_edit = False
         scheme.add_argument(arg3)
 
         arg4 = Argument("SPNApplicationKey")
         arg4.data_type = Argument.data_type_string
-        arg4.required_on_create = True
-        arg4.required_on_edit = True
+        arg4.required_on_create = False
+        arg4.required_on_edit = False
         scheme.add_argument(arg4)
 
         arg1 = Argument("SubscriptionId")
@@ -68,21 +68,27 @@ class AzureMonitorMetrics(Script):
 
         arg5 = Argument("vaultName")
         arg5.data_type = Argument.data_type_string
-        arg5.required_on_create = True
-        arg5.required_on_edit = True
+        arg5.required_on_create = False
+        arg5.required_on_edit = False
         scheme.add_argument(arg5)
 
         arg6 = Argument("secretName")
         arg6.data_type = Argument.data_type_string
-        arg6.required_on_create = True
-        arg6.required_on_edit = True
+        arg6.required_on_create = False
+        arg6.required_on_edit = False
         scheme.add_argument(arg6)
 
         arg7 = Argument("secretVersion")
         arg7.data_type = Argument.data_type_string
-        arg7.required_on_create = True
-        arg7.required_on_edit = True
+        arg7.required_on_create = False
+        arg7.required_on_edit = False
         scheme.add_argument(arg7)
+
+        # arg8 = Argument("MSIAuthentication")
+        # arg8.data_type = Argument.data_type_string
+        # arg8.required_on_create = False
+        # arg8.required_on_edit = False
+        # scheme.add_argument(arg8)
 
         return scheme
 
@@ -105,10 +111,10 @@ class AzureMonitorMetrics(Script):
             os.chdir(dir_path)
 
             # go do the password dance
-            app_id, app_key = get_or_store_secrets(self, inputs, logger)
+            credentials = get_or_store_secrets(self, inputs, logger)
 
             # go do the work
-            get_metrics_for_subscription(inputs, app_id, app_key, ew)
+            get_metrics_for_subscription(inputs, credentials, ew)
 
         except:
             logger('ERROR', 'Error caught in stream_events, type: {0}, value: {1}'\

@@ -11,6 +11,7 @@ pip install cryptography -q
 pip install adal -q
 pip install splunk-sdk -q
 pip install futures -q
+pip install msrestazure -t $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin
 cp $PYTHON_SITEPACKAGES/six.py $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin
 cp -R $PYTHON_SITEPACKAGES/splunklib $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin
 cp -R $PYTHON_SITEPACKAGES/concurrent $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin

@@ -16,6 +16,7 @@ showErrorAndUsage() {
   echo "  -r <resource group name> : [Required] Resource group to deploy resources into."
   echo "  -s <subscription id>     : [Required] Azure subscription Id."
   echo "  -t <tenant id>           : [Required] Azure Active Directory / Tenant Id."
+  echo "  -m <vm name>             : [Optional] VM name of VM that has MSI enabled. This will skip SPN setup and assign RBAC access for the VM."
   exit 1
 }
 
@@ -23,8 +24,9 @@ LOCATION=""
 RESOURCE_GROUP_NAME=""
 SUBSCRIPTION_ID=""
 TENANT_ID=""
+MSI_VM=""
 
-while getopts ':l:r:s:t:' opt; do
+while getopts ':l:r:s:t:m:' opt; do
     case $opt in
         l)
             LOCATION=$OPTARG
@@ -37,6 +39,9 @@ while getopts ':l:r:s:t:' opt; do
             ;;
         t)
             TENANT_ID=$OPTARG
+            ;;
+        m)
+            MSI_VM=$OPTARG
             ;;
         ?)
             showErrorAndUsage
@@ -53,12 +58,66 @@ then
     showErrorAndUsage
 fi
 
+# Define constants
+TICKS=$(date +%s)
+KEYVAULT_NAME="kv${TICKS}"
+EVENTHUB_NAMESPACE_NAME="eh${TICKS}"
+REST_API_SECRET_NAME="AzureMonitorMetric-secret"
+EVENTHUB_SECRET_NAME="$EVENTHUB_NAMESPACE_NAME-secret"
+
+
 # Authenticate to Azure as an interactive user and set the target subscription.
 SUBSCRIPTIONS=$(az login --tenant $TENANT_ID)
 az account set --subscription $SUBSCRIPTION_ID
 AZURE_USER=$(az account show --query user.name)
 AZURE_USER=${AZURE_USER//[\"]/}
 echo "User '${AZURE_USER}' successfully authenticated."
+
+
+function az_role_assignment_create {
+    echo "Assigning role Reader to ${1} for the subscription scope"
+    az role assignment create \
+        --assignee $1 \
+        --role 'Reader' \
+        --scope /subscriptions/$SUBSCRIPTION_ID
+
+}
+
+function keyvault_set_policy {
+    # Give the service principal permissions to read secrets from the key vault.
+    echo "Assigning 'read' permissions to key vault secrets for VM  '${MSI_VM}'."
+    az keyvault set-policy \
+        --name $KEYVAULT_NAME \
+        --resource-group $RESOURCE_GROUP_NAME \
+        --object-id $1 \
+        --secret-permissions get \
+        --query null
+}
+
+# Setup MSI and assign it to the Reader role for the subscription.
+if [ "$MSI_VM" ] ; then
+PRINCIPAL_ID=$(az resource list -n ${MSI_VM} --query '[*].identity.principalId' --out tsv)
+    if [[ "$PRINCIPAL_ID" ]]; then
+        echo "MSI has been enabled already for '${MSI_VM}'"
+
+        echo "Checking if Reader role has been applied to subscription..."
+        az role assignment list \
+            --scope /subscriptions/$SUBSCRIPTION_ID \
+            --assignee  $PRINCIPAL_ID \
+            --output tsv 1>/dev/null
+        if [ $? -ne 0 ]; then
+            az_role_assignment_create $PRINCIPAL_ID
+        fi
+
+    else
+        echo "Enabling MSI auth on '${MSI_VM}'."
+        MSI_VM_RG=$(az resource list -n ${MSI_VM} --resource-type 'Microsoft.Compute/virtualMachines' --query '[*].resourceGroup' --output tsv)
+        az vm identity assign -g $MSI_VM_RG -n $MSI_VM
+        PRINCIPAL_ID=$(az resource list -n ${MSI_VM} --query '[*].identity.principalId' --out tsv)
+        az_role_assignment_create $PRINCIPAL_ID
+
+    fi
+fi
 
 # Create the resource group that will contain the resources.
 echo "Creating resource group '${RESOURCE_GROUP_NAME}' in region '${LOCATION}'."
@@ -67,10 +126,7 @@ az group create \
     --location $LOCATION \
     --query null
 
-TICKS=$(date +%s)
-
 # Create an event hub namespace.
-EVENTHUB_NAMESPACE_NAME="eh${TICKS}"
 echo "Creating event hub namespace '${EVENTHUB_NAMESPACE_NAME}' in resource group '${RESOURCE_GROUP_NAME}'."
 az eventhubs namespace create \
     --name $EVENTHUB_NAMESPACE_NAME \
@@ -86,7 +142,6 @@ EVENTHUB_ROOT_KEY=$(az eventhubs namespace authorization-rule keys list \
 EVENTHUB_ROOT_KEY=${EVENTHUB_ROOT_KEY//[\"]/}
 
 # Create a key vault.
-KEYVAULT_NAME="kv${TICKS}"
 echo "Creating key vault '${KEYVAULT_NAME}' in resource group '${RESOURCE_GROUP_NAME}'."
 az keyvault create \
     --name $KEYVAULT_NAME \
@@ -103,30 +158,45 @@ az keyvault set-policy \
     --key-permissions get list update create import delete recover backup restore \
     --query null
 
-# Create a service principal and assign it to the Reader role for the subscription.
-SERVICE_PRINCIPAL_NAME="adap${TICKS}"
-CLIENT_SECRET=$(openssl rand -base64 32)
-echo "Creating service principal '${SERVICE_PRINCIPAL_NAME}' in Azure AD tenant '${TENANT_ID}'."
-SPN_APP_ID=$(az ad sp create-for-rbac \
-    --name $SERVICE_PRINCIPAL_NAME \
-    --password $CLIENT_SECRET \
-    --role Reader \
-    --scopes /subscriptions/$SUBSCRIPTION_ID \
-    --query appId)
-SPN_APP_ID=${SPN_APP_ID//[\"]/}
+if [ "$MSI_VM" ] ; then
+    keyvault_set_policy $PRINCIPAL_ID 
+else
+    # Create a service principal and assign it to the Reader role for the subscription.
+    SERVICE_PRINCIPAL_NAME="adap${TICKS}"
+    CLIENT_SECRET=$(openssl rand -base64 32)
+    echo "Creating service principal '${SERVICE_PRINCIPAL_NAME}' in Azure AD tenant '${TENANT_ID}'."
+    SPN_APP_ID=$(az ad sp create-for-rbac \
+        --name $SERVICE_PRINCIPAL_NAME \
+        --password $CLIENT_SECRET \
+        --role Reader \
+        --scopes /subscriptions/$SUBSCRIPTION_ID \
+        --query appId)
+    SPN_APP_ID=${SPN_APP_ID//[\"]/}
 
-# Give the service principal permissions to read secrets from the key vault.
-echo "Assigning 'read' permissions to key vault secrets for service principal '${SERVICE_PRINCIPAL_NAME}'."
-az keyvault set-policy \
-    --name $KEYVAULT_NAME \
-    --resource-group $RESOURCE_GROUP_NAME \
-    --spn $SPN_APP_ID \
-    --secret-permissions get \
-    --query null
+    # Give the service principal permissions to read secrets from the key vault.
+    echo "Assigning 'read' permissions to key vault secrets for service principal '${SERVICE_PRINCIPAL_NAME}'."
+    az keyvault set-policy \
+        --name $KEYVAULT_NAME \
+        --resource-group $RESOURCE_GROUP_NAME \
+        --spn $SPN_APP_ID \
+        --secret-permissions get \
+        --query null
 
-# Add secrets to keyvault for event hub and REST API credentials
+    # Add secrets to keyvault for REST API
+    REST_API_SECRET_VERSION=$(az keyvault secret set \
+        --vault-name $KEYVAULT_NAME \
+        --name $REST_API_SECRET_NAME \
+        --description $SPN_APP_ID \
+        --value $CLIENT_SECRET \
+        --query id)
+    REST_API_SECRET_VERSION=${REST_API_SECRET_VERSION//[\"]/}
+    REST_API_SECRET_VERSION=(${REST_API_SECRET_VERSION//// })
+    REST_API_SECRET_VERSION=${REST_API_SECRET_VERSION[${#REST_API_SECRET_VERSION[@]}-1]}
+
+fi
+
+# Add secrets to keyvault for event hub
 echo "Adding secrets to key vault '${KEYVAULT_NAME}'."
-EVENTHUB_SECRET_NAME="$EVENTHUB_NAMESPACE_NAME-secret"
 EVENTHUB_SECRET_VERSION=$(az keyvault secret set \
     --vault-name $KEYVAULT_NAME \
     --name $EVENTHUB_SECRET_NAME \
@@ -136,17 +206,6 @@ EVENTHUB_SECRET_VERSION=$(az keyvault secret set \
 EVENTHUB_SECRET_VERSION=${EVENTHUB_SECRET_VERSION//[\"]/}
 EVENTHUB_SECRET_VERSION=(${EVENTHUB_SECRET_VERSION//// })
 EVENTHUB_SECRET_VERSION=${EVENTHUB_SECRET_VERSION[${#EVENTHUB_SECRET_VERSION[@]}-1]}
-
-REST_API_SECRET_NAME="AzureMonitorMetric-secret"
-REST_API_SECRET_VERSION=$(az keyvault secret set \
-    --vault-name $KEYVAULT_NAME \
-    --name $REST_API_SECRET_NAME \
-    --description $SPN_APP_ID \
-    --value $CLIENT_SECRET \
-    --query id)
-REST_API_SECRET_VERSION=${REST_API_SECRET_VERSION//[\"]/}
-REST_API_SECRET_VERSION=(${REST_API_SECRET_VERSION//// })
-REST_API_SECRET_VERSION=${REST_API_SECRET_VERSION[${#REST_API_SECRET_VERSION[@]}-1]}
 
 # Create a new log profile to export activity log to event hub
 echo "Configuring Azure Monitor Activity Log to export to event hub '$EVENTHUB_NAMESPACE_NAME'."
@@ -177,9 +236,11 @@ echo ""
 echo "AZURE MONITOR ACTIVITY LOG"
 echo "--------------------------"
 echo "Name:              Azure Monitor Activity Log"
-echo "SPNTenantID:       $TENANT_ID"
-echo "SPNApplicationID:  $SPN_APP_ID"
-echo "SPNApplicationKey: $CLIENT_SECRET"
+if [ -z "$MSI_VM" ] ; then
+    echo "SPNTenantID:       $TENANT_ID"
+    echo "SPNApplicationID:  $SPN_APP_ID"
+    echo "SPNApplicationKey: $CLIENT_SECRET"
+fi
 echo "eventHubNamespace: $EVENTHUB_NAMESPACE_NAME"
 echo "vaultName:         $KEYVAULT_NAME"
 echo "secretName:        $EVENTHUB_SECRET_NAME"
@@ -188,9 +249,11 @@ echo ""
 echo "AZURE MONITOR DIAGNOSTIC LOG"
 echo "--------------------------"
 echo "Name:              Azure Monitor Diagnostic Log"
-echo "SPNTenantID:       $TENANT_ID"
-echo "SPNApplicationID:  $SPN_APP_ID"
-echo "SPNApplicationKey: $CLIENT_SECRET"
+if [ -z "$MSI_VM" ] ; then
+    echo "SPNTenantID:       $TENANT_ID"
+    echo "SPNApplicationID:  $SPN_APP_ID"
+    echo "SPNApplicationKey: $CLIENT_SECRET"
+fi
 echo "eventHubNamespace: $EVENTHUB_NAMESPACE_NAME"
 echo "vaultName:         $KEYVAULT_NAME"
 echo "secretName:        $EVENTHUB_SECRET_NAME"
@@ -199,12 +262,14 @@ echo ""
 echo "AZURE MONITOR METRICS"
 echo "--------------------------"
 echo "Name:              Azure Monitor Metrics"
+echo "SubscriptionId:    $SUBSCRIPTION_ID"
+if [ -z "$MSI_VM" ] ; then
 echo "SPNTenantID:       $TENANT_ID"
 echo "SPNApplicationID:  $SPN_APP_ID"
 echo "SPNApplicationKey: $CLIENT_SECRET"
-echo "SubscriptionId:    $SUBSCRIPTION_ID"
 echo "vaultName:         $KEYVAULT_NAME"
 echo "secretName:        $REST_API_SECRET_NAME"
 echo "secretVersion:     $REST_API_SECRET_VERSION"
+fi
 echo ""
 echo "Finished Successfully!"

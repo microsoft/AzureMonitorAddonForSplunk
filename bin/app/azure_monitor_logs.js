@@ -435,21 +435,21 @@ exports.getScheme = function (schemeName, schemeDesc) {
             name: "SPNTenantID",
             dataType: Argument.dataTypeString,
             description: "Azure AD tenant containing the service principal.",
-            requiredOnCreate: true,
+            requiredOnCreate: false,
             requiredOnEdit: false
         }),
         new Argument({
             name: "SPNApplicationId",
             dataType: Argument.dataTypeString,
             description: "Service principal application id (aka client id).",
-            requiredOnCreate: true,
+            requiredOnCreate: false,
             requiredOnEdit: false
         }),
         new Argument({
             name: "SPNApplicationKey",
             dataType: Argument.dataTypeString,
             description: "Service principal password (aka client secret).",
-            requiredOnCreate: true,
+            requiredOnCreate: false,
             requiredOnEdit: false
         }),
         new Argument({
@@ -561,7 +561,6 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
 
         var records = msg.body.records;
         if (!_.isUndefined(records)) {
-
             Logger.debug(name, String.format('message with {2} records received from hub {0} and partition {1}', hub, myIdx, records.length));
 
             records.forEach(function (record) {
