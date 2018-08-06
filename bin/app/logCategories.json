@@ -22,5 +22,8 @@
     "MICROSOFT.SERVERMANAGEMENT/NODES/REQUESTLOGS":"amdl:srvr:node:requestLogs",
     "MICROSOFT.SERVICEBUS/NAMESPACES/OPERATIONALLOGS":"amdl:sb:ns:operationalLogs",
     "MICROSOFT.STREAMANALYTICS/STREAMINGJOBS/EXECUTION":"amdl:sa:jobs:execution",
-    "MICROSOFT.STREAMANALYTICS/STREAMINGJOBS/AUTHORING":"amdl:sa:jobs:authoring"
+    "MICROSOFT.STREAMANALYTICS/STREAMINGJOBS/AUTHORING":"amdl:sa:jobs:authoring",
+    "MICROSOFT.SECURITYGRAPH/ALERT": "amdl:securitygraph:alert",
+    "MICROSOFT.AADIAM/AUDIT": "amdl:aadal:audit",
+    "MICROSOFT.AADIAM/SIGNIN": "amdl:aadal:signin"
 }

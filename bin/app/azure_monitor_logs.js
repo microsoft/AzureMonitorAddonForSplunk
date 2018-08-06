@@ -325,59 +325,43 @@ var messageHandler = function (name, data, eventWriter) {
 
     Logger.debug(name, String.format('streamEvents.messageHandler got data for data input named: {0}', name));
 
-    // get identifiers from resource id if it exists
-    // if it doesn't exist, this must be an AAD log - get the tenant id
-    var resourceId = data.resourceId || '';
-    var tenantId = data.tenantId || '';
-    var category = data.category || '';
+    // initialize identifiers
+    var subscriptionId = '';
+    var resourceGroup = '';
+    var resourceName = '';
+    var resourceType = '';
+
+    // get tenantId if it exists
+    var tenantId = (data.tenantId || '').toUpperCase();
+
+    // get resourceId if it exists
+    var resourceId = (data.resourceId || '').toUpperCase();
+
+    // get category if it exists
+    var category = (data.category || '').toUpperCase();
+
+    // initialize splunk sourceType
     var sourceType = '';
 
-    if (resourceId.length > 0) {
-        // not AAD log. extract details from resourceId
+    // set a couple of flags
+    var tenantBased = (tenantId.length > 0);
+    var activityLog = (~name.indexOf('azure_activity_log:'));
 
-        resourceId = data.resourceId.toUpperCase() || '';
+    if (tenantBased) {
 
-        var subscriptionId = getElement(resourceId, 'SUBSCRIPTIONS\/(.*?)\/');
-        var resourceGroup = getElement(resourceId, 'SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
-        var resourceName = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
-        var resourceType = getElement(resourceId, 'PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
-    
-        // add identifiers as standard properties to the event
-        if (subscriptionId.length > 0) {
-            data.am_subscriptionId = subscriptionId;
-        }
-        if (resourceGroup.length > 0) {
-            data.am_resourceGroup = resourceGroup;
-        }
-        if (resourceName.length > 0) {
-            data.am_resourceName = resourceName;
-        }
-        if (resourceType.length > 0) {
-            data.am_resourceType = resourceType;
-        }
-    
-    } else {
-        // AAD log
-        data.am_tenantId = tenantId;
+        var providerName = getElement(resourceId, 'PROVIDERS\/(.*?)(?:$)');
+        sourceType = getAMDLsourcetype(category, providerName);
 
-        if (tenantId.length > 0) {
-            // AAD Audit & Sign In logs
+    } else { // subscription-based
 
-            if (category === 'Audit') {
-                data.am_category = "Azure AD logs (Audit)";
-                sourceType = "amdl:aadal:audit";
-            } else {
-                data.am_category = "Azure AD logs (Sign In)";
-                sourceType = "amdl:aadal:signin";
-            }
-        }
-    }
+        // parse values from resourceId
+        subscriptionId = getElement(resourceId, 'SUBSCRIPTIONS\/(.*?)\/');
+        resourceGroup = getElement(resourceId, 'SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
+        resourceName = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
+        resourceType = getElement(resourceId, 'PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
 
-    if (~name.indexOf('azure_activity_log:')) {
-        // activity log
+        if (activityLog) {
 
-        if (tenantId.length <= 0) {
-            // Not an Azure ADD Audit or SignIn log
             var operationNameRaw = data.operationName.toUpperCase() || '';
             var operationName = '';
             if (_.isString(operationNameRaw)) {
@@ -388,14 +372,36 @@ var messageHandler = function (name, data, eventWriter) {
                 operationName = "MICROSOFT.BOGUS/THISISANERROR/ACTION";
             }
             sourceType = getAMALsourcetype(name, operationName);
+
+        } else {
+
+            sourceType = getAMDLsourcetype(category, resourceType);
+
         }
-    } else if (sourceType == '') {
-        // diagnostic logs
-        sourceType = getAMDLsourcetype(category.toUpperCase() || '', resourceType);
     }
 
-    Logger.debug(name, String.format('Event identifiers are: Subscription ID: {0}, resourceType: {1}, resourceName: {2}, sourceType: {3}',
-        subscriptionId, resourceType, resourceName, sourceType));
+    // add identifiers as standard properties to the splunk event
+    if (subscriptionId.length > 0) {
+        data.am_subscriptionId = subscriptionId;
+    }
+    if (resourceGroup.length > 0) {
+        data.am_resourceGroup = resourceGroup;
+    }
+    if (resourceName.length > 0) {
+        data.am_resourceName = resourceName;
+    }
+    if (resourceType.length > 0) {
+        data.am_resourceType = resourceType;
+    }
+    if (tenantId.length > 0) {
+        data.am_tenantId = resourceType;
+    }
+    if (category.length > 0) {
+        data.am_category = category;
+    }
+
+    Logger.debug(name, String.format('Event identifiers are: Tenant ID: {4}, Subscription ID: {0}, resourceType: {1}, resourceName: {2}, sourceType: {3}',
+        subscriptionId, resourceType, resourceName, sourceType, tenantId));
 
     var curEvent = new Event({
         stanza: name,
