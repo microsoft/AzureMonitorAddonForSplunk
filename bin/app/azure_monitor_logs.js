@@ -394,13 +394,13 @@ var messageHandler = function (name, data, eventWriter) {
         data.am_resourceType = resourceType;
     }
     if (tenantId.length > 0) {
-        data.am_tenantId = resourceType;
+        data.am_tenantId = tenantId;
     }
     if (category.length > 0) {
         data.am_category = category;
     }
 
-    Logger.debug(name, String.format('Event identifiers are: Tenant ID: {4}, Subscription ID: {0}, resourceType: {1}, resourceName: {2}, sourceType: {3}',
+    Logger.debug(name, String.format('streamEvents.messageHandler event identifiers are: Tenant ID: {4}, Subscription ID: {0}, resourceType: {1}, resourceName: {2}, sourceType: {3}',
         subscriptionId, resourceType, resourceName, sourceType, tenantId));
 
     var curEvent = new Event({
@@ -551,6 +551,7 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
 
         var annotations = msg.messageAnnotations;
         var newOffsetData = annotations['x-opt-offset'];
+
         var newOffset = Number(newOffsetData);
 
         var err;
