@@ -226,9 +226,8 @@ def get_requested_metrics(resource):
         return None
 
     # if no metrics tag, skip it
-    try:
-        metrics_tag = tags['Metrics']
-    except KeyError:
+    metrics_tag = tags.get('Metrics', tags.get('metrics', None))
+    if metrics_tag is None:
         return None
 
     if len(metrics_tag) == 0:
