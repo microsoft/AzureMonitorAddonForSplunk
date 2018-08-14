@@ -1,6 +1,6 @@
 {
   "name": "azure_monitor",
-  "version": "1.2.0",
+  "version": "1.2.9",
   "description": "Azure Monitor Addon For Splunk",
   "main": "azure_diagnostic_logs.js",
   "dependencies": {

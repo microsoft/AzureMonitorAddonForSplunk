@@ -1,5 +1,9 @@
 #!/bin/bash  
 
+# This file requires LF line endings, rather than CRLF.
+# If CRLF line endings creep in, it produces error 127 when
+# attempting to initialize the data input in Splunk.
+#
 # AZURE_ENVIRONMENT tells the add-on which cloud you're operating in
 # valid values are:
 # AzureCloud = public Azure 
