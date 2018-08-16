@@ -26,10 +26,6 @@
 //
 /* jshint unused: true */
 //
-var splunkjs = require("splunk-sdk");
-var ModularInputs = splunkjs.ModularInputs;
-var ModularInput = ModularInputs.ModularInput;
-var Logger = ModularInputs.Logger;
 var Promise = require('bluebird');
 var rp = require('request-promise');
 var _ = require('underscore');
@@ -61,7 +57,6 @@ exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultNam
         }
         token.then(function (tokenResponse) {        
                 bearerToken = tokenResponse.accessToken;
-                Logger.debug("Retrieving SAS credentials for Eventhub from KeyVault")
                 var kvUri = String.format('https://{0}{1}/secrets/{2}/{3}', vaultName, environments[environment].keyvaultDns, secretName, secretVersion);
 
                 var options = {
