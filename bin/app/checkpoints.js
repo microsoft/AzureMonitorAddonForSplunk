@@ -97,7 +97,7 @@ function getCheckpointFileName(name) {
             fs.renameSync(oldCheckpointFileName, checkpointFileName);
         }
     } catch (err) {
-        Logger.info(name, "Error renaming checkpoint file: " + err);
+        Logger.error(name, "Error renaming checkpoint file: " + err);
     }
 
     if (!fs.existsSync(path.dirname(checkpointFileName))) { 

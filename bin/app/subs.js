@@ -61,7 +61,7 @@ exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultNam
         }
         token.then(function (tokenResponse) {        
                 bearerToken = tokenResponse.accessToken;
-                Logger.info("Retrieving SAS credentials for Eventhub from KeyVault")
+                Logger.debug("Retrieving SAS credentials for Eventhub from KeyVault")
                 var kvUri = String.format('https://{0}{1}/secrets/{2}/{3}', vaultName, environments[environment].keyvaultDns, secretName, secretVersion);
 
                 var options = {
