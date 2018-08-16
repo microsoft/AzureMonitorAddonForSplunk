@@ -205,19 +205,19 @@ def get_metrics_for_subscription(inputs, credentials, ew):
         secret_version = input_item.get("secretVersion")
         input_sourcetype = input_item.get("sourcetype")
 
-        locale = "get_access_token for key vault SPN"
-        authentication_endpoint = "https://login.windows.net/"
-        resource = 'https://vault.azure.net'
-        kv_bearer_token = get_access_token(
-            tenant_id,
-            spn_client_id,
-            spn_client_secret,
-            authentication_endpoint,
-            resource)
-
-        locale = "get_secret_from_keyvault"
         arm_creds = {}
         if spn_client_id is not None and spn_client_secret is not None:
+            locale = "get_access_token for key vault SPN"
+            authentication_endpoint = "https://login.windows.net/"
+            resource = 'https://vault.azure.net'
+            kv_bearer_token = get_access_token(
+                tenant_id,
+                spn_client_id,
+                spn_client_secret,
+                authentication_endpoint,
+                resource)
+
+            locale = "get_secret_from_keyvault"
             arm_creds = get_secret_from_keyvault(ew, kv_bearer_token,
                                                 key_vault_name, secret_name, secret_version)
 
