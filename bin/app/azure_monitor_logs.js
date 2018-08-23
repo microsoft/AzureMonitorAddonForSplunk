@@ -567,7 +567,7 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
         }
 
         var records = msg.body.records;
-        if (!_.isUndefined(records)) {
+         if (!_.isUndefined(records)) {
 
             Logger.debug(name, String.format('message with {2} records received from hub {0} and partition {1}', hub, myIdx, records.length));
 
@@ -576,9 +576,20 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
             });
 
         } else {
+            // Added section because logs on a hub were being ignored due to not having the 'records' key. This was not an acceptable situation.
+            var msgbody = msg.body;
+
+            if (!_.isUndefined(msgbody)) {
+                  messageHandler(name, msgbody, eventWriter);
+                  Logger.debug(name, String.format('ehMessageHandler found a msg.body field, trying to index that. Event hub {0}.', hub));
+            } else {
+                  messageHandler(name, msg, eventWriter);
+                  Logger.debug(name, String.format('ehMessageHandler failed to find msg.body, trying to store just msg. Event hub {0}.', hub));
+            }
+            // END OF MODIFICATIONS
             Logger.debug(name, String.format('ehMessageHandler received a message from event hub {0} and partition {1} with no records.', hub, myIdx));
             Logger.debug(name, JSON.stringify(msg));
-        }
+       }
 
     };
 
