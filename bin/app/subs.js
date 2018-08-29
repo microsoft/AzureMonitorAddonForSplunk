@@ -26,6 +26,10 @@
 //
 /* jshint unused: true */
 //
+var splunkjs = require("splunk-sdk");
+var ModularInputs = splunkjs.ModularInputs;
+var Logger = ModularInputs.Logger;
+
 var Promise = require('bluebird');
 var rp = require('request-promise');
 var _ = require('underscore');
@@ -55,10 +59,9 @@ exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultNam
         } else {
             token = exports.getMSIToken(resource);
         }
-        token.then(function (tokenResponse) {        
+        token.then(function (tokenResponse) {
                 bearerToken = tokenResponse.accessToken;
                 var kvUri = String.format('https://{0}{1}/secrets/{2}/{3}', vaultName, environments[environment].keyvaultDns, secretName, secretVersion);
-
                 var options = {
                     uri: kvUri,
                     qs: {
@@ -121,7 +124,10 @@ exports.getMSIToken = function (resource) {
                 }
                 return resolve(result)
             });
-        });
+        }).catch((err) => {
+            Logger.error('getMSIToken', String.format('Failed to obtain MSI token:: {0}', err));
+            process.exit(1)
+        })
 })
 }
 
