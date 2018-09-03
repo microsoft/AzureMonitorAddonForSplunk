@@ -73,7 +73,9 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
     propsAppId.password = singleInput.SPNApplicationId;
     propsAppKey.password = singleInput.SPNApplicationKey;
 
-    if (singleInput.SPNApplicationId === secretMask) {
+    if (_.isUndefined(singleInput.SPNApplicationId) && _.isUndefined(singleInput.SPNApplicationKey)) {
+        done(null, singleInput);
+    } else if (singleInput.SPNApplicationId === secretMask) {
 
         async.parallel([
             function (callback) {
