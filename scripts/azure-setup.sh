@@ -94,6 +94,20 @@ function keyvault_set_policy {
         --query null
 }
 
+function deploy_msi_extension {
+    echo "Deploying MSI extension to '${1}'."
+    VM_OS=$(az vm show -n ${1} --resource-group ${2} --query "storageProfile.osDisk.osType" -o tsv)
+    if [ $VM_OS = "Linux" ]; then
+        az vm extension set -n ManagedIdentityExtensionForLinux --publisher Microsoft.ManagedIdentity --vm-name $1 --resource-group $2
+        echo "Linux MSI extension has been deployed to '${1}'."
+    elif [ $VM_OS = "Windows" ]; then
+        az vm extension set -n ManagedIdentityExtensionForWindows --publisher Microsoft.ManagedIdentity --vm-name $1 --resource-group $2
+        echo "Windows MSI extension has been deployed to '${1}'."
+    else
+        echo "WARNING: it was not possible to identify the OS type of your VM. Please manually deploy MSI extension to your VM"
+    fi
+}
+
 # Setup MSI and assign it to the Reader role for the subscription.
 if [ "$MSI_VM" ] ; then
 PRINCIPAL_ID=$(az resource list -n ${MSI_VM} --query '[*].identity.principalId' --out tsv)
@@ -113,9 +127,11 @@ PRINCIPAL_ID=$(az resource list -n ${MSI_VM} --query '[*].identity.principalId' 
         echo "Enabling MSI auth on '${MSI_VM}'."
         MSI_VM_RG=$(az resource list -n ${MSI_VM} --resource-type 'Microsoft.Compute/virtualMachines' --query '[*].resourceGroup' --output tsv)
         az vm identity assign -g $MSI_VM_RG -n $MSI_VM
+
+        deploy_msi_extension $MSI_VM $MSI_VM_RG
+
         PRINCIPAL_ID=$(az resource list -n ${MSI_VM} --query '[*].identity.principalId' --out tsv)
         az_role_assignment_create $PRINCIPAL_ID
-
     fi
 fi
 
@@ -264,12 +280,12 @@ echo "--------------------------"
 echo "Name:              Azure Monitor Metrics"
 echo "SubscriptionId:    $SUBSCRIPTION_ID"
 if [ -z "$MSI_VM" ] ; then
-echo "SPNTenantID:       $TENANT_ID"
-echo "SPNApplicationID:  $SPN_APP_ID"
-echo "SPNApplicationKey: $CLIENT_SECRET"
-echo "vaultName:         $KEYVAULT_NAME"
-echo "secretName:        $REST_API_SECRET_NAME"
-echo "secretVersion:     $REST_API_SECRET_VERSION"
+    echo "SPNTenantID:       $TENANT_ID"
+    echo "SPNApplicationID:  $SPN_APP_ID"
+    echo "SPNApplicationKey: $CLIENT_SECRET"
+    echo "vaultName:         $KEYVAULT_NAME"
+    echo "secretName:        $REST_API_SECRET_NAME"
+    echo "secretVersion:     $REST_API_SECRET_VERSION"
 fi
 echo ""
 echo "Finished Successfully!"
