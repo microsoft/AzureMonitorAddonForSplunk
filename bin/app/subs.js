@@ -26,10 +26,15 @@
 //
 /* jshint unused: true */
 //
+var splunkjs = require("splunk-sdk");
+var ModularInputs = splunkjs.ModularInputs;
+var Logger = ModularInputs.Logger;
+
 var Promise = require('bluebird');
 var rp = require('request-promise');
 var _ = require('underscore');
 var adal = require('adal-node');
+var msRestAzure = require('ms-rest-azure');
 var translator = require('amqp10').translator;
 var strings = require('./strings');
 strings.stringFormat();
@@ -48,13 +53,15 @@ exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultNam
     var resource = environments[environment].keyvaultResource;
 
     return new Promise(function (resolve, reject) {
-        exports.getToken(context, resource, SPNName, SPNPassword)
-            .then(function (tokenResponse) {
-
+        let token;
+        if ( typeof SPNName !== 'undefined' && typeof SPNPassword !== 'undefined' && SPNName && SPNPassword) {
+            token = exports.getToken(context, resource, SPNName, SPNPassword);
+        } else {
+            token = exports.getMSIToken(resource);
+        }
+        token.then(function (tokenResponse) {
                 bearerToken = tokenResponse.accessToken;
-
                 var kvUri = String.format('https://{0}{1}/secrets/{2}/{3}', vaultName, environments[environment].keyvaultDns, secretName, secretVersion);
-
                 var options = {
                     uri: kvUri,
                     qs: {
@@ -71,11 +78,11 @@ exports.getEventHubCreds = function (SPNName, SPNPassword, SPNTenantID, vaultNam
             })
             .then(function (response) {
                 var creds = { sasKeyName: response.contentType, sasKeyValue: response.value };
-                return resolve(creds);
-            })
-            .catch(function (err) {
-                return reject(err);
-            });
+            return resolve(creds);
+        })
+        .catch(function (err) {
+            return reject(err);
+        });
     });
 };
 
@@ -102,7 +109,26 @@ exports.getToken = function (context, resource, clientId, clientSecret) {
             }
             return resolve(tokenResponse);
         })
-    })
+})
+}
+
+exports.getMSIToken = function (resource) {
+    return new Promise(function (resolve, reject) {
+        var options = {
+            resource: resource
+        };
+        msRestAzure.loginWithMSI(options).then((token) => {
+            token.getToken((error, result) => {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(result)
+            });
+        }).catch((err) => {
+            Logger.error('getMSIToken', String.format('Failed to obtain MSI token:: {0}', err));
+            process.exit(1)
+        })
+})
 }
 
 exports.checkPointHubPartition = function (err, name, hub, idx, offset) {

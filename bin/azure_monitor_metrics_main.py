@@ -94,28 +94,34 @@ def get_or_store_secrets(self, inputs, logger):
     input_items = inputs.inputs.itervalues().next()
     input_name = inputs.inputs.iterkeys().next()
 
+    credentials = {}
+
     props_app_id = {}
     props_app_id['username'] = 'AzureMonitorMetricsAppID'
-    props_app_id['password'] = input_items["SPNApplicationId"]
+    props_app_id['password'] = input_items.get("SPNApplicationId")
 
     props_app_key = {}
     props_app_key['username'] = 'AzureMonitorMetricsAppKey'
-    props_app_key['password'] = input_items["SPNApplicationKey"]
+    props_app_key['password'] = input_items.get("SPNApplicationKey")
 
-    app_id = input_items["SPNApplicationId"]
-    app_key = input_items["SPNApplicationKey"]
+    app_id = input_items.get("SPNApplicationId")
+    app_key = input_items.get("SPNApplicationKey")
 
-    try:
-        if props_app_id['password'] == MASK:
-            app_id, app_key = get_app_id_and_key(self, props_app_id, props_app_key, logger)
-        else:
-            create_or_update_storage_password(self, props_app_id, logger)
-            create_or_update_storage_password(self, props_app_key, logger)
-            mask_id_and_key(self, input_name, logger)
-    except Exception as e:
-        logger('ERROR', 'Error caught in get_or_store_secrets: {0}'.format(e))
 
-    return app_id, app_key
+    if app_id is not None and app_key is not None:
+        try:
+            if props_app_id['password'] == MASK:
+                app_id, app_key = get_app_id_and_key(self, props_app_id, props_app_key, logger)
+            else:
+                create_or_update_storage_password(self, props_app_id, logger)
+                create_or_update_storage_password(self, props_app_key, logger)
+                mask_id_and_key(self, input_name, logger)
+        except Exception as e:
+            logger('ERROR', 'Error caught in get_or_store_secrets: {0}'.format(e))
+
+        credentials['app_id'] = app_id
+        credentials['app_key'] = app_key
+    return credentials
 
 
 def get_app_id_and_key(self, props_app_id, props_app_key, logger):
@@ -164,7 +170,7 @@ def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sour
                     sub_url, resource_group, future.result(), input_sourcetype, checkpoint_dict)
 
 
-def get_metrics_for_subscription(inputs, app_id, app_key, ew):
+def get_metrics_for_subscription(inputs, credentials, ew):
     """
         top level function
         given subscription id and credentials, get metrics for all resources with the right tags
@@ -190,28 +196,30 @@ def get_metrics_for_subscription(inputs, app_id, app_key, ew):
         # and update the checkpoint for next time
         put_time_checkpoint(ew, checkpoint_dict)
 
-        tenant_id = input_item["SPNTenantID"]
-        spn_client_id = app_id
-        spn_client_secret = app_key
-        subscription_id = input_item["SubscriptionId"]
-        key_vault_name = input_item["vaultName"]
-        secret_name = input_item["secretName"]
-        secret_version = input_item["secretVersion"]
-        input_sourcetype = input_item["sourcetype"]
+        tenant_id = input_item.get("SPNTenantID")
+        spn_client_id = credentials.get('app_id')
+        spn_client_secret = credentials.get('app_key')
+        subscription_id = input_item.get("SubscriptionId")
+        key_vault_name = input_item.get("vaultName")
+        secret_name = input_item.get("secretName")
+        secret_version = input_item.get("secretVersion")
+        input_sourcetype = input_item.get("sourcetype")
 
-        locale = "get_access_token for key vault SPN"
-        authentication_endpoint = "https://login.windows.net/"
-        resource = 'https://vault.azure.net'
-        kv_bearer_token = get_access_token(
-            tenant_id,
-            spn_client_id,
-            spn_client_secret,
-            authentication_endpoint,
-            resource)
+        arm_creds = {}
+        if spn_client_id is not None and spn_client_secret is not None:
+            locale = "get_access_token for key vault SPN"
+            authentication_endpoint = "https://login.windows.net/"
+            resource = 'https://vault.azure.net'
+            kv_bearer_token = get_access_token(
+                tenant_id,
+                spn_client_id,
+                spn_client_secret,
+                authentication_endpoint,
+                resource)
 
-        locale = "get_secret_from_keyvault"
-        arm_creds = get_secret_from_keyvault(ew, kv_bearer_token,
-                                             key_vault_name, secret_name, secret_version)
+            locale = "get_secret_from_keyvault"
+            arm_creds = get_secret_from_keyvault(ew, kv_bearer_token,
+                                                key_vault_name, secret_name, secret_version)
 
         locale = "get_access_token"
         authentication_endpoint = get_azure_environment(
@@ -220,8 +228,8 @@ def get_metrics_for_subscription(inputs, app_id, app_key, ew):
             'Azure')['activeDirectoryResourceId']
         bearer_token = get_access_token(
             tenant_id,
-            arm_creds['spn_client_id'],
-            arm_creds['spn_client_secret'],
+            arm_creds.get('spn_client_id'),
+            arm_creds.get('spn_client_secret'),
             authentication_endpoint,
             resource)
 

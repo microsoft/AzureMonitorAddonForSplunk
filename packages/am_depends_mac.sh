@@ -6,6 +6,7 @@ pip install PyJWT -q
 pip install adal -q
 pip install splunk-sdk -q
 pip install futures -q
+pip install msrestazure -t $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin
 cp /Library/Python/2.7/site-packages/six.py $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin
 cp -R /Library/Python/2.7/site-packages/splunklib $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin
 cp -R /Library/Python/2.7/site-packages/splunklib $SPLUNK_HOME/etc/apps/TA-Azure_Monitor/bin/app

@@ -36,6 +36,7 @@ import adal
 import requests
 from splunklib.modularinput import Event
 from timewindow import get_time_window
+from msrestazure.azure_active_directory import MSIAuthentication
 from metricDefinitions import get_metric_definitions_for_resource_type, put_metric_definitions_for_resource_type
 
 AZURE_API_VERSION_METRICS = '2016-09-01'
@@ -104,6 +105,18 @@ def get_resource_group_segment(resource_group_name):
 def get_access_token(tenant_id, application_id, application_secret,
                      authentication_endpoint, resource):
     """
+        helper class to support both SPN and MSI methods of accessing tokens
+    """
+    if application_id is None and application_secret is None:
+        return _get_access_token_msi()
+    else:
+        return _get_access_token_spn(tenant_id, application_id, application_secret,
+                     authentication_endpoint, resource)
+
+
+def _get_access_token_spn(tenant_id, application_id, application_secret,
+                     authentication_endpoint, resource):
+    """
         get_access_token(tenant_id, application_id, application_secret)
         get an Azure access token using the adal library
     """
@@ -116,6 +129,15 @@ def get_access_token(tenant_id, application_id, application_secret,
     bearer_token = token_response.get('accessToken')
 
     return bearer_token
+
+
+def _get_access_token_msi():
+    """
+        get_access_token_msi()
+        get an Azure access token using the MSI library
+    """
+
+    return MSIAuthentication().token.get('access_token')
 
 
 def get_secret_from_keyvault(ew, bearer_token, vault_name, secret_name, secret_version):
@@ -204,9 +226,8 @@ def get_requested_metrics(resource):
         return None
 
     # if no metrics tag, skip it
-    try:
-        metrics_tag = tags['Metrics']
-    except KeyError:
+    metrics_tag = tags.get('Metrics', tags.get('metrics', None))
+    if metrics_tag is None:
         return None
 
     if len(metrics_tag) == 0:
