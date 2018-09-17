@@ -359,8 +359,8 @@ var messageHandler = function (name, data, eventWriter) {
         // parse values from resourceId
         subscriptionId = getElement(resourceId, 'SUBSCRIPTIONS\/(.*?)\/');
         resourceGroup = getElement(resourceId, 'SUBSCRIPTIONS\/(?:.*?)\/RESOURCEGROUPS\/(.*?)\/');
-        resourceName = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
-        resourceType = getElement(resourceId, 'PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
+        resourceType = getElement(resourceId, 'PROVIDERS\/(.*?\/.*?)(?:\/)');
+        resourceName = getElement(resourceId, 'PROVIDERS\/(?:.*?\/.*?\/)(.*?)(?:\/|$)');
 
         if (activityLog) {
 
