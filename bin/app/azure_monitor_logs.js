@@ -601,9 +601,12 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
 
     var disconnectFunction = function () {
 
-        Logger.debug(name, 'Five seconds of silence on all hubs, disconnecting.');
+        Logger.debug(name, 'Five seconds of silence on all hubs, disconnecting. This is normal - it means the hubs are drained.');
         var hubs = Object.keys(amqpClients);
         hubs.forEach(function (hub) {
+            if (amqpClients[hub].connected === false) {
+                Logger.error(name, String.format('No connection on hub: {0}. Is there a network route to the endpoint?', hub));
+            }
             amqpClients[hub].client.disconnect();
             delete amqpClients[hub];
         });
@@ -628,9 +631,11 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
 
                 amqpClients[hub] = {};
                 amqpClients[hub].client = new AMQPClient(Policy.EventHub);
+                amqpClients[hub].connected = false;
 
                 amqpClients[hub].client.connect(uri)
                     .then(function () {
+                        amqpClients[hub].connected = true;
                         return Promise.all([
                             Promise.map(range(0, 4), function (idx) {
                                 return createPartitionReceiver(hub, idx, recvAddr + idx, filterOption[idx]);
