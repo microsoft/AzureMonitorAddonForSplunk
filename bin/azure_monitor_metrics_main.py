@@ -95,18 +95,26 @@ def get_or_store_secrets(self, inputs, logger):
     input_name = inputs.inputs.iterkeys().next()
 
     credentials = {}
+    storage_passwords = self.service.storage_passwords
 
     props_app_id = {}
-    props_app_id['username'] = 'AzureMonitorMetricsAppID'
+    props_app_id['username'] = 'AzureMonitorMetricsAppID-{0}'.format(input_name.replace(':','_'))
     props_app_id['password'] = input_items.get("SPNApplicationId")
 
+    if ("AzureMonitorMetricsAppID" in storage_passwords) and (props_app_id['username'] not in storage_passwords):
+        # Create new unique storage password entry for AzureMonitorMetricsAppID based on input name
+        modify_storage_password(self, "AzureMonitorMetricsAppID", props_app_id['username'], logger)
+
     props_app_key = {}
-    props_app_key['username'] = 'AzureMonitorMetricsAppKey'
+    props_app_key['username'] = 'AzureMonitorMetricsAppKey-{0}'.format(input_name.replace(':','_'))
     props_app_key['password'] = input_items.get("SPNApplicationKey")
+
+    if ("AzureMonitorMetricsAppKey" in storage_passwords) and (props_app_key['username'] not in storage_passwords):
+        # Create new unique storage password entry for AzureMonitorMetricsAppKey based on input name
+        modify_storage_password(self, "AzureMonitorMetricsAppKey", props_app_key['username'], logger)
 
     app_id = input_items.get("SPNApplicationId")
     app_key = input_items.get("SPNApplicationKey")
-
 
     if app_id is not None and app_key is not None:
         try:
@@ -129,6 +137,7 @@ def get_app_id_and_key(self, props_app_id, props_app_key, logger):
         get the encrypted app_id and app_key from storage_passwords
     '''
     storage_passwords = self.service.storage_passwords
+
     if props_app_id['username'] not in storage_passwords:
         raise KeyError('Did not find app_id {} in storage_passwords.'\
             .format(props_app_id['username']))
@@ -147,6 +156,14 @@ def get_app_id_and_key(self, props_app_id, props_app_key, logger):
 
     return app_id, app_key
 
+def modify_storage_password(self, old_username, new_username, logger):
+    logger('INFO', 'Updating storage password. Old username: {0}, new username: {1}'.format(old_username, new_username))
+    storage_passwords = self.service.storage_passwords
+    try:
+        password = storage_passwords[old_username].clear_password
+        storage_passwords.create(password, new_username)
+    except Exception as e:
+        logger('ERROR', 'Error updating storage password in modify_storage_password: {0}'.format(e))
 
 def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sourcetype, checkpoint_dict):
     """
