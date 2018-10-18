@@ -43,9 +43,10 @@ def create_or_update_storage_password(self, props, logger):
 
         locale = 'reference'
         storage_passwords = self.service.storage_passwords
-        if props['username'] in storage_passwords:
-            locale = 'delete'
-            storage_passwords.delete(props['username'])
+        for password in storage_passwords:
+            if password['username'] == props['username'] and password['realm'] == props['realm']:
+                locale = 'delete'
+                storage_passwords.delete(props['username'], realm=props['realm'])
 
     except Exception as e:
         logger('ERROR', 'Error at locale {1} in create_or_update_storage_password: {0}'\
@@ -53,7 +54,7 @@ def create_or_update_storage_password(self, props, logger):
 
     try:
         locale = 'create'
-        self.service.storage_passwords.create(props['password'], props['username'])
+        self.service.storage_passwords.create(props['password'], props['username'], props['realm'])
     except Exception as e:
         logger('ERROR', 'Error at locale {1} in create_or_update_storage_password: {0}'\
             .format(e, locale))
@@ -94,54 +95,56 @@ def get_or_store_secrets(self, inputs, logger):
     input_items = inputs.inputs.itervalues().next()
     input_name = inputs.inputs.iterkeys().next()
 
-    credentials = {}
-
     props_app_id = {}
     props_app_id['username'] = 'AzureMonitorMetricsAppID'
-    props_app_id['password'] = input_items.get("SPNApplicationId")
+    props_app_id['password'] = input_items["SPNApplicationId"]
+    props_app_id['realm']    = '__AM_CREDENTIAL__{0}'.format(input_name)
 
     props_app_key = {}
     props_app_key['username'] = 'AzureMonitorMetricsAppKey'
-    props_app_key['password'] = input_items.get("SPNApplicationKey")
+    props_app_key['password'] = input_items["SPNApplicationKey"]
+    props_app_key['realm']    = '__AM_CREDENTIAL__{0}'.format(input_name)
 
-    app_id = input_items.get("SPNApplicationId")
-    app_key = input_items.get("SPNApplicationKey")
+    app_id = input_items["SPNApplicationId"]
+    app_key = input_items["SPNApplicationKey"]
 
+    try:
+        if props_app_id['password'] == MASK:
+            app_id, app_key = get_app_id_and_key(self, props_app_id, props_app_key, logger)
+        else:
+            create_or_update_storage_password(self, props_app_id, logger)
+            create_or_update_storage_password(self, props_app_key, logger)
+            mask_id_and_key(self, input_name, logger)
+    except Exception as e:
+        logger('ERROR', 'Error caught in get_or_store_secrets: {0}'.format(e))
 
-    if app_id is not None and app_key is not None:
-        try:
-            if props_app_id['password'] == MASK:
-                app_id, app_key = get_app_id_and_key(self, props_app_id, props_app_key, logger)
-            else:
-                create_or_update_storage_password(self, props_app_id, logger)
-                create_or_update_storage_password(self, props_app_key, logger)
-                mask_id_and_key(self, input_name, logger)
-        except Exception as e:
-            logger('ERROR', 'Error caught in get_or_store_secrets: {0}'.format(e))
-
-        credentials['app_id'] = app_id
-        credentials['app_key'] = app_key
-    return credentials
+    return app_id, app_key
 
 
 def get_app_id_and_key(self, props_app_id, props_app_key, logger):
     '''
         get the encrypted app_id and app_key from storage_passwords
     '''
-    storage_passwords = self.service.storage_passwords
-    if props_app_id['username'] not in storage_passwords:
-        raise KeyError('Did not find app_id {} in storage_passwords.'\
-            .format(props_app_id['username']))
-
-    if props_app_key['username'] not in storage_passwords:
-        raise KeyError('Did not find app_id {} in storage_passwords.'\
-            .format(props_app_key['username']))
-
     app_id = ''
     app_key = ''
+
     try:
-        app_id = storage_passwords[props_app_id['username']].clear_password
-        app_key = storage_passwords[props_app_key['username']].clear_password
+        storage_passwords = self.service.storage_passwords
+        for password in storage_passwords:
+            if password['username'] == props_app_id['username'] and password['realm'] == props_app_id['realm']:
+                app_id = password.content.clear_password
+
+            if password['username'] == props_app_key['username'] and password['realm'] == props_app_key['realm']:
+                app_key = password.content.clear_password
+
+        if app_id == '':
+            raise KeyError('Did not find app_id {} in storage_passwords.'\
+                .format(props_app_id['username']))
+
+        if app_key == '':
+            raise KeyError('Did not find app_key {} in storage_passwords.'\
+                .format(props_app_key['username']))
+
     except Exception as e:
         logger('ERROR', 'Error caught in get_app_id_and_key: {0}'.format(e))
 
@@ -170,7 +173,7 @@ def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sour
                     sub_url, resource_group, future.result(), input_sourcetype, checkpoint_dict)
 
 
-def get_metrics_for_subscription(inputs, credentials, ew):
+def get_metrics_for_subscription(inputs, app_id, app_key, ew):
     """
         top level function
         given subscription id and credentials, get metrics for all resources with the right tags
@@ -196,30 +199,28 @@ def get_metrics_for_subscription(inputs, credentials, ew):
         # and update the checkpoint for next time
         put_time_checkpoint(ew, checkpoint_dict)
 
-        tenant_id = input_item.get("SPNTenantID")
-        spn_client_id = credentials.get('app_id')
-        spn_client_secret = credentials.get('app_key')
-        subscription_id = input_item.get("SubscriptionId")
-        key_vault_name = input_item.get("vaultName")
-        secret_name = input_item.get("secretName")
-        secret_version = input_item.get("secretVersion")
-        input_sourcetype = input_item.get("sourcetype")
+        tenant_id = input_item["SPNTenantID"]
+        spn_client_id = app_id
+        spn_client_secret = app_key
+        subscription_id = input_item["SubscriptionId"]
+        key_vault_name = input_item["vaultName"]
+        secret_name = input_item["secretName"]
+        secret_version = input_item["secretVersion"]
+        input_sourcetype = input_item["sourcetype"]
 
-        arm_creds = {}
-        if spn_client_id is not None and spn_client_secret is not None:
-            locale = "get_access_token for key vault SPN"
-            authentication_endpoint = "https://login.windows.net/"
-            resource = 'https://vault.azure.net'
-            kv_bearer_token = get_access_token(
-                tenant_id,
-                spn_client_id,
-                spn_client_secret,
-                authentication_endpoint,
-                resource)
+        locale = "get_access_token for key vault SPN"
+        authentication_endpoint = "https://login.windows.net/"
+        resource = 'https://vault.azure.net'
+        kv_bearer_token = get_access_token(
+            tenant_id,
+            spn_client_id,
+            spn_client_secret,
+            authentication_endpoint,
+            resource)
 
-            locale = "get_secret_from_keyvault"
-            arm_creds = get_secret_from_keyvault(ew, kv_bearer_token,
-                                                key_vault_name, secret_name, secret_version)
+        locale = "get_secret_from_keyvault"
+        arm_creds = get_secret_from_keyvault(ew, kv_bearer_token,
+                                             key_vault_name, secret_name, secret_version)
 
         locale = "get_access_token"
         authentication_endpoint = get_azure_environment(
@@ -228,8 +229,8 @@ def get_metrics_for_subscription(inputs, credentials, ew):
             'Azure')['activeDirectoryResourceId']
         bearer_token = get_access_token(
             tenant_id,
-            arm_creds.get('spn_client_id'),
-            arm_creds.get('spn_client_secret'),
+            arm_creds['spn_client_id'],
+            arm_creds['spn_client_secret'],
             authentication_endpoint,
             resource)
 

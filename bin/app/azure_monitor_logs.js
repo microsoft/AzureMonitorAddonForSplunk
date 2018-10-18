@@ -73,9 +73,10 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
     propsAppId.password = singleInput.SPNApplicationId;
     propsAppKey.password = singleInput.SPNApplicationKey;
 
-    if (_.isUndefined(singleInput.SPNApplicationId) && _.isUndefined(singleInput.SPNApplicationKey)) {
-        done(null, singleInput);
-    } else if (singleInput.SPNApplicationId === secretMask) {
+    propsAppId.realm = '__AM_CREDENTIAL__' + name
+    propsAppKey.realm = '__AM_CREDENTIAL__' + name
+
+    if (singleInput.SPNApplicationId === secretMask) {
 
         async.parallel([
             function (callback) {
@@ -84,7 +85,7 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
                     if (err) {
                         callback(err);
                     } else {
-                        var pw = storagePasswords.item(':' + propsAppId.name + ':');
+                        var pw = storagePasswords.item(propsAppId.realm + ':' + propsAppId.name + ':');
                         if (_.isUndefined(pw) || _.isNull(pw)) {
                             callback({ status: 404 });
                         } else {
@@ -101,7 +102,7 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
                     if (err) {
                         callback(err);
                     } else {
-                        var pw = storagePasswords.item(':' + propsAppKey.name + ':');
+                        var pw = storagePasswords.item(propsAppKey.realm + ':' + propsAppKey.name + ':');
                         if (_.isUndefined(pw) || _.isNull(pw)) {
                             callback({ status: 404 });
                         } else {
@@ -190,7 +191,7 @@ function createOrUpdateStoragePassword(name, storagePasswords, props, done) {
                 if (err) {
                     callback(err);
                 } else {
-                    var pw = storagePasswords.item(':' + props.name + ':');
+                    var pw = storagePasswords.item(props.realm + ':' + props.name + ':');
                     if (_.isUndefined(pw) || _.isNull(pw)) {
                         callback(null, false);
                     } else {
@@ -201,7 +202,7 @@ function createOrUpdateStoragePassword(name, storagePasswords, props, done) {
         },
         function (pwExists, callback) {
             if (pwExists) {
-                storagePasswords.del(':' + props.name + ':', {}, function (err) {
+                storagePasswords.del(props.real + ':' + props.name + ':', {}, function (err) {
                     if (err) {
                         callback(err);
                     } else {
