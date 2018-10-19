@@ -64,11 +64,11 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
     var propsAppId = {};
     var propsAppKey = {};
     if (~name.indexOf('azure_activity_log:')) {
-        propsAppId.name = 'AzureMonitorActivityLogAppID';
-        propsAppKey.name = 'AzureMonitorActivityLogAppKey';
+        propsAppId.name = 'AzureMonitorActivityLogAppID-' + name.replace(":", "_");
+        propsAppKey.name = 'AzureMonitorActivityLogAppKey-' + name.replace(":", "_");
     } else {
-        propsAppId.name = 'AzureMonitorDiagnosticLogsAppID';
-        propsAppKey.name = 'AzureMonitorDiagnosticLogsAppKey';
+        propsAppId.name = 'AzureMonitorDiagnosticLogsAppID-' + name.replace(":", "_");
+        propsAppKey.name = 'AzureMonitorDiagnosticLogsAppKey-' + name.replace(":", "_");
     }
     propsAppId.password = singleInput.SPNApplicationId;
     propsAppKey.password = singleInput.SPNApplicationKey;
@@ -84,7 +84,12 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
                     if (err) {
                         callback(err);
                     } else {
+                        var oldPw = storagePasswords.item(':' + propsAppId.name.substr(0, propsAppId.name.indexOf('-')) + ':');
                         var pw = storagePasswords.item(':' + propsAppId.name + ':');
+                        if ((!_.isUndefined(oldPw) || !_.isNull(oldPw)) && (_.isUndefined(pw) || _.isNull(pw))) {
+                            // Create new unique storage password entry based on old password entry
+                            modifyStoragePassword(name, storagePasswords, oldPw, propsAppId.name);
+                        }
                         if (_.isUndefined(pw) || _.isNull(pw)) {
                             callback({ status: 404 });
                         } else {
@@ -101,7 +106,12 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
                     if (err) {
                         callback(err);
                     } else {
+                        var oldPw = storagePasswords.item(':' + propsAppKey.name.substr(0, propsAppKey.name.indexOf('-')) + ':');
                         var pw = storagePasswords.item(':' + propsAppKey.name + ':');
+                        if ((!_.isUndefined(oldPw) || !_.isNull(oldPw)) && (_.isUndefined(pw) || _.isNull(pw))) {
+                            // Create new unique storage password entry based on old password entry
+                            modifyStoragePassword(name, storagePasswords, oldPw, propsAppKey.name);
+                        }
                         if (_.isUndefined(pw) || _.isNull(pw)) {
                             callback({ status: 404 });
                         } else {
@@ -159,6 +169,28 @@ exports.getOrStoreSecrets = function (name, singleInput, done) {
 
     }
 };
+
+function modifyStoragePassword(name, storagePasswords, oldPassword, newUsername) {
+
+    Logger.debug(name, String.format('Updating storage password. Old username: {0}, new username {1}', oldPassword.name, newUsername));
+
+    storagePasswords.create({
+        name: newUsername,
+        password: oldPassword._properties.clear_password},
+        function (err, newUsername) {
+        if (err) {
+            if (err.status === 409) {
+                callback(null, null);   // ignore duplicate already exists
+            } else {
+                callback(err);
+            }
+        }
+        else {
+            callback(null, newUsername);
+        }
+    });
+
+}
 
 function maskAppIdAndKeySync(name, session_key) {
 
