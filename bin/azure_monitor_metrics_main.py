@@ -101,23 +101,23 @@ def get_or_store_secrets(self, inputs, logger):
     props_app_id['username'] = 'AzureMonitorMetricsAppID-{0}'.format(input_name.replace(':','_'))
     props_app_id['password'] = input_items.get("SPNApplicationId")
 
-    if ("AzureMonitorMetricsAppID" in storage_passwords) and (props_app_id['username'] not in storage_passwords):
-        # Create new unique storage password entry for AzureMonitorMetricsAppID based on input name
-        modify_storage_password(self, "AzureMonitorMetricsAppID", props_app_id['username'], logger)
-
     props_app_key = {}
     props_app_key['username'] = 'AzureMonitorMetricsAppKey-{0}'.format(input_name.replace(':','_'))
     props_app_key['password'] = input_items.get("SPNApplicationKey")
-
-    if ("AzureMonitorMetricsAppKey" in storage_passwords) and (props_app_key['username'] not in storage_passwords):
-        # Create new unique storage password entry for AzureMonitorMetricsAppKey based on input name
-        modify_storage_password(self, "AzureMonitorMetricsAppKey", props_app_key['username'], logger)
 
     app_id = input_items.get("SPNApplicationId")
     app_key = input_items.get("SPNApplicationKey")
 
     if app_id is not None and app_key is not None:
         try:
+            if ("AzureMonitorMetricsAppID" in storage_passwords) and (props_app_id['username'] not in storage_passwords):
+                # Create new unique storage password entry for AzureMonitorMetricsAppID based on input name
+                modify_storage_password(self, "AzureMonitorMetricsAppID", props_app_id['username'], logger)
+
+            if ("AzureMonitorMetricsAppKey" in storage_passwords) and (props_app_key['username'] not in storage_passwords):
+                # Create new unique storage password entry for AzureMonitorMetricsAppKey based on input name
+                modify_storage_password(self, "AzureMonitorMetricsAppKey", props_app_key['username'], logger)
+
             if props_app_id['password'] == MASK:
                 app_id, app_key = get_app_id_and_key(self, props_app_id, props_app_key, logger)
             else:
