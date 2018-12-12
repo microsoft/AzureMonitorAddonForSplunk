@@ -174,9 +174,6 @@ def get_arm(ew, url, parameters, bearer_token):
     headers["Content-Type"] = "application/json"
     headers["Authorization"] = " ".join(["Bearer", bearer_token])
 
-    ew.log('INFO', "url: {}".format(url))
-    ew.log('INFO', "parameters: {}".format(parameters))
-
     response = requests.get(url,
                             params=parameters, headers=headers)
 
@@ -299,7 +296,6 @@ def get_index_resource_metrics(ew, bearer_token, sub_url, resource_rq, input_sou
         ew.log('ERROR', 'get_index_resource_metrics area 1: {0}'.format(e))
 
     for metric in list_of_metrics:
-        ew.log('INFO', "metric in metrics: {}".format(metric))
         resource_id = metric['id'].upper()
 
         re_sub = re.compile(r"SUBSCRIPTIONS\/(.*?)\/")
@@ -505,7 +501,6 @@ def get_metrics_to_get(ew, bearer_token, sub_url,
         metrics_names += "name.value eq '{0}'".format(metric_to_get)
     metrics_names = '(' + metrics_names + ')'
 
-    ew.log('INFO', "metric names: {}".format(metrics_names))
     # query string / time window
     time_window = get_time_window(ew, checkpoint_dict)
 
@@ -519,8 +514,6 @@ def get_metrics_to_get(ew, bearer_token, sub_url,
             'ERROR', 'get_metrics_to_get: Error returned from get_arm: {0}'.format(e))
         value = []
     
-    ew.log('INFO', "value return: {}".format(value))
-
     return value
 
 
