@@ -30,3 +30,5 @@ SubscriptionId = <value>
 vaultName = <value> # Not required when using MSI Authentication
 secretName = <value> # Not required when using MSI Authentication
 secretVersion = <value> # Not required when using MSI Authentication
+metricsTagKey = <value> # Optional, defaults to "Metrics" if not specified
+ignoreTagValue = true/false # Optional, defaults to false

@@ -148,10 +148,10 @@ def get_app_id_and_key(self, props_app_id, props_app_key, logger):
     return app_id, app_key
 
 
-def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sourcetype, checkpoint_dict):
+def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_config_dict, checkpoint_dict):
     """
         map the resource groups to a function that gets resources
-    """
+    """    
     resource_group_names = []
     for resource_group in resource_groups:
         resource_group_names.append(resource_group['name'])
@@ -167,7 +167,7 @@ def get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sour
                        .format(resource_group, future.exception()))
             else:
                 get_metrics_for_resources(ew, bearer_token, \
-                    sub_url, resource_group, future.result(), input_sourcetype, checkpoint_dict)
+                    sub_url, resource_group, future.result(), input_config_dict, checkpoint_dict)
 
 
 def get_metrics_for_subscription(inputs, credentials, ew):
@@ -203,7 +203,13 @@ def get_metrics_for_subscription(inputs, credentials, ew):
         key_vault_name = input_item.get("vaultName")
         secret_name = input_item.get("secretName")
         secret_version = input_item.get("secretVersion")
-        input_sourcetype = input_item.get("sourcetype")
+
+        # dict to capture config items that are passed down to further functions
+        input_config_dict = {
+            "input_sourcetype": input_item.get("sourcetype"),
+            "metrics_tag_key": input_item.get("metricsTagKey"),
+            "ignore_tag_value": input_item.get("ignoreTagValue")
+        }
 
         arm_creds = {}
         if spn_client_id is not None and spn_client_secret is not None:
@@ -245,7 +251,7 @@ def get_metrics_for_subscription(inputs, credentials, ew):
         resource_groups = get_resources(ew, bearer_token, sub_url)
 
         locale = "get_resources_for_rgs"
-        get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_sourcetype, checkpoint_dict)
+        get_resources_for_rgs(ew, bearer_token, sub_url, resource_groups, input_config_dict, checkpoint_dict)
 
     except:
         ew.log('ERROR', 'Error caught in get_metrics_for_subscription, type: {0}, value: {1}, locale = {2}'

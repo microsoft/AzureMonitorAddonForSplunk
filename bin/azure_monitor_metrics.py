@@ -84,11 +84,17 @@ class AzureMonitorMetrics(Script):
         arg7.required_on_edit = False
         scheme.add_argument(arg7)
 
-        # arg8 = Argument("MSIAuthentication")
-        # arg8.data_type = Argument.data_type_string
-        # arg8.required_on_create = False
-        # arg8.required_on_edit = False
-        # scheme.add_argument(arg8)
+        arg8 = Argument("metricsTagKey")
+        arg8.data_type = Argument.data_type_string
+        arg8.required_on_create = False
+        arg8.required_on_edit = False
+        scheme.add_argument(arg8)
+
+        arg9 = Argument("ignoreTagValue")
+        arg9.data_type = Argument.data_type_boolean
+        arg9.required_on_create = False
+        arg9.required_on_edit = False
+        scheme.add_argument(arg9)
 
         return scheme
 
