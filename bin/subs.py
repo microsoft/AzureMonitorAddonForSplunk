@@ -226,8 +226,8 @@ def get_requested_metrics(resource, input_config_dict):
         return None
 
     # retrieve tag configuration
-    tag_key = input_config_dict.get("metrics_tag_key", "Metrics")
-    ignore_tag_value = input_config_dict.get("ignore_tag_value", False)
+    tag_key = input_config_dict.get("metrics_tag_key") or 'Metrics'
+    ignore_tag_value = input_config_dict.get("ignore_tag_value") or False
 
     # check for presence of defined tag key in config or default Metrics tag key.
     # HACK: checking for lowercase version of tag key as vertain Azure API versions have a bug for services like EventHub, where tag keys are returned on lowercase
@@ -421,7 +421,7 @@ def get_metrics_for_resources(ew, bearer_token, sub_url,
 
     list_of_requested_metrics = []
     for resource in resources:
-        set_of_requested_metrics = get_requested_metrics(resource)
+        set_of_requested_metrics = get_requested_metrics(resource, input_config_dict)
 
         if set_of_requested_metrics is None:
             continue
