@@ -228,8 +228,8 @@ def get_metrics_for_subscription(inputs, credentials, ew):
             'Azure')['activeDirectoryResourceId']
         bearer_token = get_access_token(
             tenant_id,
-            arm_creds.get('spn_client_id'),
-            arm_creds.get('spn_client_secret'),
+            arm_creds.get('name'),
+            arm_creds.get('password'),
             authentication_endpoint,
             resource)
 

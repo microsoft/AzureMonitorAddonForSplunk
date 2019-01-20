@@ -43,7 +43,7 @@ AZURE_API_VERSION_METRICS = '2016-09-01'
 AZURE_API_VERSION_METRICS_DEFINITIONS = '2016-03-01'
 AZURE_API_VERSION_COMPUTE = '2016-03-30'
 AZURE_API_VERSION_RESOURCES = '2016-09-01'
-AZURE_API_VERSION_KV = '2016-10-01'
+AZURE_API_VERSION_KV = '7.0'
 ALL_AVAILABLE_METRICS = "All available metrics"
 
 AZURE_ENVIRONMENTS = {
@@ -144,24 +144,30 @@ def get_secret_from_keyvault(ew, bearer_token, vault_name, secret_name, secret_v
     '''
         get contents of the requested secret from a key vault
     '''
-    url = 'https://{0}.vault.azure.net/secrets/{1}/{2}'\
-        .format(vault_name, secret_name, secret_version)
+    creds = {}
+    try:
+        url = 'https://{0}.vault.azure.net/secrets/{1}/{2}'.format(vault_name, secret_name, secret_version)
 
-    headers = {}
-    headers["Content-Type"] = "application/json"
-    headers["Authorization"] = " ".join(["Bearer", bearer_token])
+        headers = {}
+        headers["Content-Type"] = "application/json"
+        headers["Authorization"] = " ".join(["Bearer", bearer_token])
 
-    parameters = {'api-version': AZURE_API_VERSION_KV}
+        parameters = {'api-version': AZURE_API_VERSION_KV}
 
-    response = requests.get(url,
-                            params=parameters, headers=headers)
+        ew.log('DEBUG', 'url = {0}, parameters = {1}, headers = {2}'.format(url, parameters, headers))
 
-    response.raise_for_status()
+        response = requests.get(url, params=parameters, headers=headers)
 
-    response_content = response.content
-    content = json.loads(response_content)
-    creds = {'spn_client_id': content['contentType'],
-             'spn_client_secret': content['value']}
+        ew.log('DEBUG', 'response from key vault received')
+
+        response.raise_for_status()
+
+        response_content = response.content
+        content = json.loads(response_content)
+        creds = {'name': content['contentType'],
+                'password': content['value']}
+    except Exception as e:
+        ew.log('ERROR', 'Error caught getting keyvault secret: {0}'.format(e))
 
     return creds
 
