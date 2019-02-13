@@ -1,24 +1,20 @@
 {
-    "insights-logs-workflowruntime": "workflowId",
-    "insights-logs-networksecuritygrouprulecounter": "resourceId",
-    "insights-logs-networksecuritygroupevent": "resourceId",
-    "insights-logs-applicationgatewayaccesslog": "resourceId",
-    "insights-logs-applicationgatewayperformancelog": "resourceId",
-    "insights-logs-applicationgatewayfirewalllog": "resourceId",
-    "insights-logs-loadbalanceralertevent": "resourceId",
-    "insights-logs-loadbalancerprobehealthstatus": "resourceId",
-    "insights-logs-auditevent": "resourceId",
-    "insights-logs-servicelog": "resourceId",
-    "insights-logs-integrationaccounttrackingevents": "resourceId",
-    "insights-logs-joblogs": "resourceId",
-    "insights-logs-jobstreams": "resourceId",
-    "insights-logs-audit": "resourceId",
-    "insights-logs-signin": "resourceId",
-    "insights-logs-signinlogs": "resourceId",
-    "insights-logs-requests": "resourceId",
-    "insights-logs-requestlogs": "resourceId",
-    "insights-logs-operationallogs": "resourceId",
-    "insights-logs-execution": "resourceId",
-    "insights-logs-authoring": "resourceId",
-    "insights-logs-alerts": "resourceId"
+    -- DELETE THESE LINES
+    -- 
+    -- Add to this file only references to hubs that actually exist in your hub namespace.
+    --
+    -- Each reference looks like this: "hub-name": "resourceId"
+    -- The only exception is "insights-logs-workflowruntime": "workflowId"
+    --  which you would need if you're monitoring the Workflow Runtime.
+    -- And of course, you need a valid json file as the result. So put a comma at the end of each line except the last.
+    -- 
+    -- Example: you monitor load balancer health probe status logs. You would add this line to hubs.json:
+    --  "insights-logs-loadbalancerprobehealthstatus": "resourceId"
+    -- UNLESS you decided to name your own hub. In which case you would add that name in place of the default above.
+    --
+    -- SPECIAL NOTE:
+    -- Under no circumstances should "insights-operational-logs" be in this file. This is the non-configurable
+    --  hub name assigned to Azure Monitor Activity Logs.
+    --
+    -- /DELETE THESE LINES
 }

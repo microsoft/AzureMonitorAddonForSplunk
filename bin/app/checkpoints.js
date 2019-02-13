@@ -44,7 +44,7 @@ exports.getCheckpoints = function (name) {
     } catch (err) {
         if (err.code === 'ENOENT') { }
         else {
-            Logger.debug(name, 'Caught error reading checkpoint file: ' + err);
+            Logger.error(name, 'Caught error reading checkpoint file: ' + err);
             checkpointsData = "{}";
         }
     }
@@ -60,7 +60,7 @@ exports.putCheckpoints = function (err, name, checkpoints) {
         //Logger.debug(name, 'Writing checkpoint file');
         fs.writeFileSync(checkpointFileName, JSON.stringify(checkpoints));
     } catch (err) {
-        Logger.debug(name, 'Caught error writing checkpoint file: ' + err);
+        Logger.error(name, 'Caught error writing checkpoint file: ' + err);
     }
 
 }
