@@ -4,6 +4,7 @@ deployment/TA-Azure_Monitor
 deployment/temp
 modinputs
 *.pyc
+packages/*.spl
 
 # Logs
 logs
