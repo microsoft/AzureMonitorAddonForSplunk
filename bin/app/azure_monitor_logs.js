@@ -364,10 +364,10 @@ var messageHandler = function (name, data, eventWriter) {
 
         if (activityLog) {
 
-            var operationNameRaw = data.operationName.toUpperCase() || '';
+            var operationNameRaw = data.operationName || '';
             var operationName = '';
             if (_.isString(operationNameRaw)) {
-                operationName = operationNameRaw;
+                operationName = operationNameRaw.toUpperCase();
             } else if (_.isObject(operationNameRaw)) {
                 operationName = operationNameRaw.value.toUpperCase() || '';
             } else {
