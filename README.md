@@ -2,6 +2,8 @@
 
 ## NOTES
 
+This Splunk TA (add-on) is Open Source. Support is best effort. Members of the community (you) are encouraged to participate so that this popular TA can get the support its users richly deserve.
+
 Please log your feature requests as issues.
 
 If you prefer to stream your Azure Monitor telemetry to Splunk's HEC port, please check out this alternative to installing an add-on on your Splunk box:  
