@@ -337,7 +337,8 @@ var messageHandler = function (name, data, eventWriter) {
     var tenantId = (data.tenantId || '').toUpperCase();
 
     // get resourceId if it exists
-    var resourceId = (data.resourceId || '').toUpperCase();
+    // recent additions now use resourceid rather than resourceId
+    var resourceId = (data.resourceId || data.resourceid || '').toUpperCase();
 
     // get category if it exists
     var category = (data.category || '').toUpperCase();
