@@ -32,6 +32,7 @@ from timewindow import put_time_window, put_time_checkpoint
 from concurrent import futures
 from subs import get_subscription_segment, get_resources, get_azure_environment, \
     get_access_token, get_metrics_for_resources, get_secret_from_keyvault
+from azure_environment import set_azure_environment, get_azure_environment
 
 MASK = '********'
 
@@ -206,10 +207,13 @@ def get_metrics_for_subscription(inputs, credentials, ew):
         input_sourcetype = input_item.get("sourcetype")
 
         arm_creds = {}
+        set_azure_environment()
         if spn_client_id is not None and spn_client_secret is not None:
             locale = "get_access_token for key vault SPN"
-            authentication_endpoint = "https://login.windows.net/"
-            resource = 'https://vault.azure.net'
+            # authentication_endpoint = "https://login.windows.net/"
+            authentication_endpoint = get_azure_environment()['activeDirectoryEndpointUrl']
+            # resource = 'https://vault.azure.net'
+            resource = get_azure_environment()['keyvaultResource']
             kv_bearer_token = get_access_token(
                 tenant_id,
                 spn_client_id,
@@ -222,10 +226,9 @@ def get_metrics_for_subscription(inputs, credentials, ew):
                                                 key_vault_name, secret_name, secret_version)
 
         locale = "get_access_token"
-        authentication_endpoint = get_azure_environment(
-            'Azure')['activeDirectoryEndpointUrl']
-        resource = get_azure_environment(
-            'Azure')['activeDirectoryResourceId']
+        set_azure_environment()
+        authentication_endpoint = get_azure_environment()['activeDirectoryEndpointUrl']
+        resource = get_azure_environment()['activeDirectoryResourceId']
         bearer_token = get_access_token(
             tenant_id,
             arm_creds.get('spn_client_id'),
@@ -234,8 +237,7 @@ def get_metrics_for_subscription(inputs, credentials, ew):
             resource)
 
         locale = "get_azure_environment"
-        resource_mgr_endpoint_url = get_azure_environment(
-            'Azure')['resourceManagerEndpointUrl']
+        resource_mgr_endpoint_url = get_azure_environment()['resourceManagerEndpointUrl']
 
         locale = "get_subscription_segment"
         sub_url = resource_mgr_endpoint_url + \

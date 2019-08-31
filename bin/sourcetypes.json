@@ -3,5 +3,6 @@
     "MICROSOFT.WEB/SITES":"amm:web:sites",
     "MICROSOFT.SQL/SERVERS/DATABASES": "amm:sqlserver:database",
     "MICROSOFT.SQL/SERVERS": "amm:sqlserver:server",
-    "MICROSOFT.EVENTHUB/NAMESPACES": "amm:eventhub:namespace"
+    "MICROSOFT.EVENTHUB/NAMESPACES": "amm:eventhub:namespace",
+    "MICROSOFT.KEYVAULT/VAULTS": "amm:keyvault:vaults"
 }

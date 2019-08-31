@@ -38,6 +38,7 @@ from splunklib.modularinput import Event
 from timewindow import get_time_window
 from msrestazure.azure_active_directory import MSIAuthentication
 from metricDefinitions import get_metric_definitions_for_resource_type, put_metric_definitions_for_resource_type
+from azure_environment import get_azure_environment, set_azure_environment
 
 AZURE_API_VERSION_METRICS = '2016-09-01'
 AZURE_API_VERSION_METRICS_DEFINITIONS = '2016-03-01'
@@ -46,45 +47,13 @@ AZURE_API_VERSION_RESOURCES = '2016-09-01'
 AZURE_API_VERSION_KV = '2016-10-01'
 ALL_AVAILABLE_METRICS = "All available metrics"
 
-AZURE_ENVIRONMENTS = {
-    "Azure": {
-        "resourceManagerEndpointUrl": "https://management.azure.com",
-        "activeDirectoryEndpointUrl": "https://login.microsoftonline.com/",
-        "activeDirectoryResourceId": "https://management.core.windows.net/"
-    },
-    "China": {
-        "resourceManagerEndpointUrl": "https://management.chinacloudapi.cn",
-        "activeDirectoryEndpointUrl": "https://login.chinacloudapi.cn/",
-        "activeDirectoryResourceId": "https://management.core.chinacloudapi.cn/"
-    },
-    "GovCloud": {
-        "resourceManagerEndpointUrl": "https://management.usgovcloudapi.net",
-        "activeDirectoryEndpointUrl": "https://login.microsoftonline.com/",
-        "activeDirectoryResourceId": "https://management.core.usgovcloudapi.net/"
-    },
-    "BlackForest": {
-        "resourceManagerEndpointUrl": "https://management.microsoftazure.de",
-        "activeDirectoryEndpointUrl": "https://login.microsoftonline.de/",
-        "activeDirectoryResourceId": "https://management.core.cloudapi.de/"
-    }
-}
 __all__ = \
     [
         'get_access_token',
         'get_resources',
-        'get_azure_environment',
         'get_subscription_segment',
         'get_metrics_for_resources'
     ]
-
-
-def get_azure_environment(environment):
-    """
-        given environment name, return the base URL
-    """
-    azure_environment = AZURE_ENVIRONMENTS[environment]
-    return azure_environment
-
 
 def get_subscription_segment(subscription_id):
     """
@@ -144,8 +113,10 @@ def get_secret_from_keyvault(ew, bearer_token, vault_name, secret_name, secret_v
     '''
         get contents of the requested secret from a key vault
     '''
-    url = 'https://{0}.vault.azure.net/secrets/{1}/{2}'\
-        .format(vault_name, secret_name, secret_version)
+    set_azure_environment()
+    vault_dns = get_azure_environment()['keyvaultDns']
+    url = 'https://{0}{1}/secrets/{2}/{3}'\
+        .format(vault_name, vault_dns, secret_name, secret_version)
 
     headers = {}
     headers["Content-Type"] = "application/json"
