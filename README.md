@@ -96,14 +96,14 @@ If you are planning to use MSI authentication instead of Service Principal (SPN)
 
 ### <a name="splunk-setup"></a>Splunk Enterprise configuration ###
 
-1. Install the add-on in Splunk Enterprise using the latest package file in `.\packages\*.spl`.
+1. Install the add-on in Splunk Enterprise using the latest package file from [the github releases page](https://github.com/microsoft/AzureMonitorAddonForSplunk/releases).
    * In Splunk, open the apps manager page by clicking on the gear icon.
 
       ![Managing apps in Splunk](./images/manage-apps.png)
 
    * Click on the button labeled **Install app from file**.
 
-   * In the dialog window, click the **Browse...** button and select the latest `*.spl` file in the `.\packages` folder.  Next, click the **Upload** button.
+   * In the dialog window, click the **Browse...** button and select the downloaded `.spl` file.  Next, click the **Upload** button.
 
       ![Upload add-on to Splunk](./images/upload-add-on-app.png)
 
@@ -171,7 +171,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 ## Generating the Splunk package file
 
-As a contributor, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_7.spl`.  Follow the steps below to generate the version specific package file.
+To test changes, you will need to generate a version specific package file that includes your changes, such as `.\packages\TA-Azure_Monitor_1_2_7.spl`.  Follow the steps below to generate the version specific package file.
 
 Note: The scripts use [7-Zip](https://www.7-zip.org/) to build the the file structure and contents.  So, make sure you have this installed on your computer and that `7z` can be run from a command/shell prompt. 
 
