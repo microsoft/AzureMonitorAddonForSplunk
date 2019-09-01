@@ -108,9 +108,9 @@ exports.getToken = function (context, resource, clientId, clientSecret) {
                 return reject(err);
             }
             return resolve(tokenResponse);
-        })
-})
-}
+        });
+    });
+};
 
 exports.getMSIToken = function (resource) {
     return new Promise(function (resolve, reject) {
@@ -126,10 +126,10 @@ exports.getMSIToken = function (resource) {
             });
         }).catch((err) => {
             Logger.error('getMSIToken', String.format('Failed to obtain MSI token:: {0}', err));
-            process.exit(1)
-        })
-})
-}
+            process.exit(1);
+        });
+    });
+};
 
 exports.checkPointHubPartition = function (err, name, hub, idx, offset) {
 
