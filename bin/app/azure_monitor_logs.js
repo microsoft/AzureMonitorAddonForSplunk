@@ -50,6 +50,7 @@ var path = require('path');
 var environments = require('./environments.json');
 
 var secretMask = '********';
+var defaultConsumerGroup = '$default';
 
 exports.getOrStoreSecrets = function (name, singleInput, done) {
 
@@ -488,6 +489,13 @@ exports.getScheme = function (schemeName, schemeDesc) {
             description: "Version of the secret containing SAS key & value.",
             requiredOnCreate: true,
             requiredOnEdit: false
+        }),
+        new Argument({
+            name: "consumerGroup",
+            dataType: Argument.dataTypeString,
+            description: "Name of the consumer group to use for polling",
+            requiredOnCreate: false,
+            requiredOnEdit: false
         })
         // other arguments here
     ];
@@ -502,6 +510,7 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
 
     // setup
     var eventHubNamespace = singleInput.eventHubNamespace;
+    var consumerGroup = singleInput.consumerGroup || defaultConsumerGroup;
     var SPNName = singleInput.SPNApplicationId;
     var SPNPassword = singleInput.SPNApplicationKey;
     var SPNTenantID = singleInput.SPNTenantID;
@@ -628,7 +637,7 @@ exports.streamEvents = function (name, singleInput, eventWriter, done) {
                 subs.checkPointHubPartition(err, name, hub);
 
                 var filterOption = subs.getFilterOffsets(name, hub);
-                var recvAddr = hub + '/ConsumerGroups/$default/Partitions/';
+                var recvAddr = hub + '/ConsumerGroups/' + consumerGroup + '/Partitions/';
 
                 amqpClients[hub] = {};
                 amqpClients[hub].client = new AMQPClient(Policy.EventHub);
