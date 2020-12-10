@@ -4,11 +4,9 @@
 
 This Splunk TA (add-on) is Open Source and not an officially support Microsoft product. Support is best effort. Members of the community (you) are encouraged to participate so that this popular TA can get the support its users richly deserve.
 
-Please log your feature requests as issues.
+Splunk updated their Python requirement to v3.x a few months ago. This TA still takes a dependency on Python 2.7.  
 
-If you prefer to stream your Azure Monitor telemetry to Splunk's HEC port, please check out this alternative to installing an add-on on your Splunk box:  
-
-[Azure Function for Splunk](https://github.com/Microsoft/AzureFunctionforSplunkVS)
+The repo is archived due to lack of resources to keep it up to date.  
 
 ## Overview  
 
